@@ -49,8 +49,8 @@
 > 보스턴은 미국 메사추세츠 주의 주 도시로 교육, 의료, 경제, 항만, 문화 산업이 발달한 미국의 대표적인 도시중 하나이다. 특히 **미국의 아테네**라는 수식어에 걸맞게 아름다운 찰스강을 중심으로 세계적인 수준의 대학교와 교육기관들이 자리잡고 있으며, 이들 대학교에서 운영하는 병원과 의료시설들과 문화산업 시설들이 발달하여 높은 수준의 도시 인프라환경을 자랑하는 도시이다. 이러한 배경에는 19세기 후반부터 발달하기 시작한 항만 산업을 토대로 경제가 크게 발달하며 많은 사람들이 보스턴에 터전을 마련하였고, 20세기 중반 높은 인구밀도에 따른 대규모 도시재생 사업이 전개된 역사가 있다.
 
 <figure class="half">
-    <img src = "./images/boston_develop_area_map_1950.jpg">
-    <img src = "./images/boston_develop_map.jpg">
+    <img src = "./images/boston_develop_area_map_1950.jpg" width="100", height="150">
+    <img src = "./images/boston_develop_map.jpg" width="200", height="150">
 <figure>
 
 
