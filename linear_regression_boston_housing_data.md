@@ -1,5 +1,7 @@
 # 프로젝트 : 선형회귀 분석을 사용한 Boston Housing Data 집값 예측
 
+<p align=center><img src = "./images/boston_city.jpg" /></p>
+
 ## 1. 분석 개요
 
 ### 1-1. 분석 목적
@@ -44,8 +46,8 @@
 ## 2. 가설 수립
 
 ### 2-1. Boston Housing Data의 배경
-<p align=center><img src = "./images/boston_city.jpg" /></p>
-<p align=center><img src = "./images/boston_map_4.jpg" /></p>
+
+<p align=center><img src = "./images/boston_map_4.jpg" width="70%"/></p>
 
 > 보스턴은 미국 메사추세츠 주의 주 도시로 교육, 의료, 경제, 항만, 문화 산업이 발달한 미국의 대표적인 도시중 하나이다. 특히 미국의 아테네라는 수식어에 걸맞게 아름다운 보스턴 항만과 찰스강을 중심따라서 세계적인 수준의 대학교와 교육기관들이 자리잡고 있으며, 이들 대학교에서 운영하는 의료시설들과 보스턴 정부의 문화산업 시설들이 있어 높은 수준의 도시 인프라 환경을 자랑하는 세계적인 명소로 알려져 있다. 
 
