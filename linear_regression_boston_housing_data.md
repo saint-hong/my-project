@@ -512,8 +512,9 @@ plt.show()
     - PCA를 사용하여 데이터의 차원 축소
     - 사용한 데이터 : df_4
 
-## 1. 1차 OLS 모델링
+## 1. 모델링 1 : m_f1
 - formula : 독립변수 데이터와 종속변수 데이터의 변형 없이 적용
+    - 'CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT'
 
 ### 1-1. formula 정의
 
@@ -543,9 +544,23 @@ formula
     - f_value  : 108.07666
     - aic      : 3025.6085
     - bic      : 3084.7801
-3) **조건수**
-    - 매우 높음
-    - 다중공선성 발생 : 독립변수간 스케일의 차이 또는 독립변수간의 강한 상관관계 원인
+3) **조건수(condition number)**
+    - 조건수 : 15113.517599134899 (매우 높음)
+    - 강한 다중 공선성 발생 : "strong multicolinearity"
+    - 독립변수간의 단위 차이로 인한 스케일 문제 또는 독립변수간의 강한 상관관계가 있는 경우 발생
+
+#### 조건수란?
+- 조건수 : 데이터의 공분산 행렬의 작은 고유값, 큰 고유값의 비율값
+    - 조건수가 크면 예측값의 오차도 커진다.
+    - 즉 성능이 저하된다. (rsquared 값 감소)
+- 조건 수 발생 이유
+    - 변수들의 단위 차이
+    - 다중공선성 발생 (독립변수간 강한 상관관계가 있는 경우)
+- 조건수를 낮추는 방법
+    - 변수들의 단위 차이로 인한 스케일의 차이가 큰 경우 : 스케일링
+    - 다중 공선성이 발생하는 경우 : 변수선택(VIF), 차원축소(PCA), 정규화 등
+- OLS 레포트의 오른쪽 아래에 cond. No. 값에 해당함
+
 
 ```python
 f_trans_X = dmatrix_X_df(formula, df)
@@ -621,7 +636,9 @@ resid_jbtest_df(models)
 
 
 ### 1-5. 잔차의 정규성 검정 : QQ 플롯
+- 잔차의 범위가 -10에서 20까지 넓게 분포되어 있다.
 - **분포의 양 끝부분이 바깥으로 휘어져 있으므로 잔차의 분포는 정규분포라고 할 수 없다.**
+    - 또한 중심분포가 직선 형태가 아닌 구부러진 형태이므로 정규분포라고 할 수 없다.
 
 ```python
 plt.figure(figsize=(8, 6))
@@ -630,30 +647,159 @@ plt.show() ;
 ```
 ![f_qq.jpg](./images/model_1/f_qq.jpg)
 
+### 1-6. 모델링 1의 분석
+- 1) 독립변수를 그대로 적용한 formula를 사용한 모델1의 OLS reoprt에서 조건수가 높다는 경고가 확인 되었다. 이것은 다중공선성 현상이 발생했기 때문인데, 다중공선성은 독립변수간의 스케일이 서로 다르거나 상관성이 높은 경우 발생한다. 다중공선성은 모형의 과최적화의 원인이 될 수 있다. **따라서 다음 모델링에서 조건수를 낮추기 위해 독립변수의 스케일링을 적용 한다.**
+- 2) 교차검증을 한 결과 학습 데이터를 사용한 경우와 검증 데이터를 사용한 경우의 성능이 크게 차이나지 않는 것으로 보아 **과최적화는 발생하지 않은 것으로 보인다.**
+- 3) 데이터와 모델이 적합한 경우 잔차는 정규분포를 따르게 되는데, 자크베라 검정으로 정규성을 검정한 결과 잔차가 정규분포가 아닌 것으로 보인다. **데이터와 모델의 적합성을 더 향상시켜줄 필요가 있다.**
+- 4) QQ 플롯으로 잔차의 정규분포를 측정하면 양쪽 끝이 바깥으로 꺾인 형태를 나타낸다. 또한 중심 분포 또한 직선 형태가 아닌 곡선 형태를 나타내는 것으로 보아 **잔차는 정규분포를 따르지 않는다.**
+- 5) 1차 모델링에서 분석한 선형회귀 모형
+    - $y = 36.45949 const -0.10801 CRIM + 0.04642 ZN + 0.02056 INDUS + 2.68673 CHAS -17.76661 NOX + 3.80987 RM + 0.00069 AGE -1.47557 DIS + 0.30605 RAD -0.01233 TAX -0.95275 PTRATIO + 0.00931 B -0.52476 LSTAT$
+
+## 2. 모델링 2 : m_f2
+- formula_1 : 'scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(DIS) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT)' 
+- **모델링 1의 OLS report에서 발생한 조건수 에러를 해결하기 위해 독립변수에 스케일링을 적용한다.**
+    - 평균을 0, 표준편차를 1으로 조정한다.
+- **독립변수 중 CHAS는 범주형 데이터이므로 스케일링이 아닌 범주형 처리를 적용한다.**
+
+#### 범주형 독립변수의 범주형 처리(더미 변수화)
+- `범주형 데이터를 더미변수화 하는 2가지 방법`
+- 풀랭크 : 상수값 가중치를 가지지 않는 모형
+    - **formula 식에 0 추가, C(CHAS) 추가**
+- 축소랭크 : 상수값 가중치를 가지는 모형
+    - **formula 식에 0 제외, C(CHAS) 추가**
+    - 기존의 방식으로 모형을 만든 것과 같다.
+- `범주형 독립변수를 더미변수화 한다고 해서 모형의 성능이 바뀌는 것은 아니다.`
+    - 가중치 계수가 변화한다.
+
+### 2-1. formula 식 설정
+- formula 식에서 독립변수의 이름에 scale()을 붙여준다.
+- CHAS는 C()를 붙여준다.
+- 종속변수인 MEDV는 제외한다.
+
+```python
+feature_names = [ele for ele in df.columns]
+feature_names = list(set(feature_names).difference(["CHAS", "MEDV"]))
+formula_1 = ["scale({})".format(ele) for ele in feature_names] + ["C(CHAS)"]
+formula_1
+
+>>> print
+
+['scale(B)',
+ 'scale(AGE)',
+ 'scale(RAD)',
+ 'scale(PTRATIO)',
+ 'scale(CRIM)',
+ 'scale(TAX)',
+ 'scale(DIS)',
+ 'scale(NOX)',
+ 'scale(ZN)',
+ 'scale(LSTAT)',
+ 'scale(RM)',
+ 'scale(INDUS)',
+ 'C(CHAS)']
+```
+
+### 2-2. CHAS 독립변수의 유니크 데이터와 분포 확인
+- 유니크 데이터가 0과 1이다. 따라서 범주형 데이터로 볼 수 있다.
+
+#### 유니크 값 확인
+
+```python
+df["CHAS"].unique(), df["CHAS"].nunique()
+
+>>> print
+
+(array([0., 1.]), 2)
+```
+
+#### CHAS 데이터 분포 확인
+
+```python
+plt.figure(figsize=(8, 6))
+sns.distplot(df["CHAS"], rug=False, kde=True, color='k')
+plt.show() ;
+```
+![f1_chas_dist.jpg](./images/model_2/f1_chas_dist.jpg)
 
 
+### 2-3. formula_1을 사용하여 OLS 모델링
+- **함수 사용**
+    - dmatrix_X_df(), modeling_dmatrix(), modeling_non_const()
+
+#### <OLS report 분석>
+- 1) 예측 가중치 계수
+    - 이전 모델의 가중치 계수의 크기가 많이 달라 졌다.
+    - INDUS와 AGE의 pvalue 값은 여전히 가장 높다. 가중치에 영향을 미치지 않는 변수로 볼 수 있다.
+- 2) CHAS 변수의 분포 확인 : 카테고리 변수
+- 3) 성능지표 : 이전 모델과 달라지지 않았다.
+    - rsquared : 0.741
+    - r2_adj : 0.733
+    - f_value : 108.07666
+    - aic : 3025.6085
+    - bic : 3084.7801
+- 4) 조건수
+    - 스케일링 적용으로 다중공선성 현상이 사라져 조건수가 크게 낮아졌다.
+
+```python
+f1_trans_X = dmatrix_X_df(formula_1, df)
+f1_model, f1_result = modeling_dmatrix(dfy, f1_trans_X)
+f1_model_2, f1_result_2 = modeling_non_const("MEDV ~ " + formula_1, df)
+
+print(f1_result_2.summary())
+```
+![f1_report.jpg](./images/model_2/f1_report.jpg)
+
+### 2-4. 성능 지표 비교
+- **모델링 1과 모델의 성능이 같다.**
+    - 스케일링과 CHAS 독립변수의 범주형 처리는 모델의 성능에 영향을 미치지 않았다.
+- **함수 사용**
+    - stats_to_df(concat_df, model) : 성능지표 데이터 프레임을 병합하여 반환하는 함수
+
+```python
+f1_stats_df = stats_to_df(f_stats_df, "f1_result_2")
+f1_stats_df
+```
+![f1_stats_df.jpg](./images/model_2/f1_stats_df.jpg)
+
+### 2-5. 교차 검증
+- **모델링 1과 교차 검증 값이 같다.**
+
+#### KFold를 사용한 교차 검증
+- 과최적화 발생하지 않음
+- **함수 사용**
+    - cross_val_func()
+
+```python
+train_s, test_s = cross_val_func(6, df, "MEDV ~" + formula_1)
+train_s, test_s
+```
+![f1_cv_score.jpg](./images/model_2/f1_cv_score.jpg)
 
 
+#### train_test_split을 사용한 교차 검증
+- 과최적화 발생하지 않음
+- **함수 사용**
+    - df_split_train_model()
+    - calc_r2()
 
+```python
+train_rsquared = []
+test_rsquared = []
 
+for seed_i in range(10) :
 
+    ## df, train_test_split의 test_size, random_seed 값을 파라미터로 사용
+    (df_train, df_test, result) = df_split_train_model(
+                                            df, "MEDV ~ " + formula_1, 0.2, seed_i)
+    train_rsquared.append(result.rsquared)
+    test_rsquared.append(calc_r2(df, df_test, result))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+r2_df = pd.DataFrame({"train_r2" : train_rsquared, "test_r2" : test_rsquared},
+                     columns=["train_r2", "test_r2"])
+r2_df.loc["mean"] = cv_df.mean(axis=0)
+r2_df    
+```
+![f1_cv_score_2.jp](./images/model_2/f1_cv_score_2.jpg)
 
 
 
