@@ -352,14 +352,11 @@ sep_cols
 #### CRIM, ZN, INUDS와 MEDV
 - **CRIM**
     - MEDV와 음의 비선형 관계가 있는 것으로 보인다.
-    - 지수분포의 형태에 가깝다.
 - **ZN**
     - 특정 범위의 실수형 값에 데이터가 분포되어 있는 형태이다. 0값에 데이터가 몰려있다.
-    - 균일분포의 형태에 가깝다.
 - **INDUS**
     - MEDV와 비선형 관계가 있는 것으로 보인다.
-    - 복잡한 다봉분포 형태에 가깝다.
-
+   
 ```python
 sns.pairplot(df[sep_cols[0]])
 
@@ -370,14 +367,11 @@ plt.show() ;
 #### CHAS, NOX, RM과 MEDV
 - **CHAS**
     - 0, 1의 값을 이루어진 카테고리형 데이터이다.
-    - 베르누이 분포이다.
 - **NOX**
     - MEDV와 음의 비선형 상관관계가 있는 것으로 보인다.
-    - 로그 정규분포의 형태에 가깝다.
 - **RM**
     - MEDV와 양의 상관관계가 있는 것으로 보인다.
     - 데이터의 MIN, MAX 값 부근에서 선형성이 사라지는 것으로 보인다.
-    - 정규분포의 형태에 가깝다.
 
 ```python
 sns.pairplot(df[sep_cols[1]])
@@ -390,13 +384,10 @@ plt.show() ;
 - **AGE**
     - 0~100 사이의 값에 데이터가 분포되어 있다.
     - MEDV와 비선형 상관관계, DIS와 상관관계가 있는 것으로 보인다.
-    - 베타분포의 형태에 가깝다.
 - **DIS**
     - MEDV와 비선형 상관관계, AGE와 상관관계가 있는 것으로 보인다.
-    - 로그정규분포의 형태에 가깝다.
 - **RAD**
     - 특정 범위의 값에 데이터가 몰려 있는 것으로 보인다.
-    - 정규분포의 형태에 가깝다.    
 
 ```python
 sns.pairplot(df[sep_cols[2]])
@@ -408,18 +399,13 @@ plt.show() ;
 #### TAX, PTRATIO, B, LSTAT와 MEDV
 - **TAX**
     - 특정 범위의 값에 데이터가 몰려 있는 것으로 보인다.
-    - 정규분포의 형태에 가깝다.
 - **PTRATIO**
     - MEDV와 비선형 상관관계가 있는 것으로 보인다.
-    - 균일분포의 형태에 가깝다. 
 - **B**
     - MEDV와 비선형 상관관계가 있는 것으로 보인다.
-    - 정규분포의 형태에 가깝다.
 - **LSTAT**
     - MEDV와 비선형 상관관계가 있는 것으로 보인다.
-    - 로그 정규분포의 형태에 가깝다.
 - **MEDV**
-    - 정규분포의 형태에 가깝다.
     - 50의 값에 데이터가 몰려 있는 것으로 보인다.
 
 ```python
@@ -428,6 +414,37 @@ sns.pairplot(df[sep_cols[3]])
 plt.show() ;
 ```
 ![p14.png](./images/p14.png)
+
+### 5-8. 변수의 누적 분포
+- 독립변수의 비선형 변형에 참고로 사용할 수 있다.
+- **CRIM** : 지수분포의 형태에 가깝다.
+- **ZN** : 균일분포의 형태에 가깝다.
+- **INDUS** : 복잡한 다봉분포 형태에 가깝다.
+- **CHAS** : 베르누이 분포이다.
+- **NOX** : 로그 정규분포의 형태에 가깝다.
+- **RM** : 정규분포의 형태에 가깝다.
+- **AGE** : 베타분포의 형태에 가깝다.
+- **DIS** : 로그정규분포의 형태에 가깝다.
+- **RAD** : 정규분포의 형태에 가깝다.    
+- **TAX** : 정규분포의 형태에 가깝다.
+- **PTRATIO** : 균일분포의 형태에 가깝다. 
+- **B** : 정규분포의 형태에 가깝다.
+- **LSTAT** : 로그 정규분포의 형태에 가깝다.
+- **MEDV** : 정규분포의 형태에 가깝다.
+
+```python
+plt.figure(figsize=(20, 20))
+
+for i in range(14) :
+    plt.subplot(4, 4, i + 1)
+    col = df.columns[i]
+    sns.distplot(df[[col]], rug=False, kde=True, color='k')
+    plt.title("{}".format(col), fontsize=20)
+
+plt.tight_layout()
+plt.show()
+```
+![p15.png](./images/p15.png)
 
 
 # 모델링
@@ -496,14 +513,142 @@ plt.show() ;
     - 사용한 데이터 : df_4
 
 ## 1. 1차 OLS 모델링
+- formula : 독립변수 데이터와 종속변수 데이터의 변형 없이 적용
+
+### 1-1. formula 정의
+
+```python
+formula = [col for col in df.columns if col != "MEDV"]
+formula = " + ".join(formula)
+formula
+
+>>> print
+
+'CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT'
+```
+
+### 1-2. formula를 사용하여 OLS 모델링
+- 상수항 미포함 모델과 상수항 포함 모델 각각 2가지로 생성 및 모수추정 후 OLS report 분석
+- **함수 사용**
+    - dmatrix_X_df(formula, df, outlier_idx=None) : 상수항 미포함 데이터 프레임을 dmatrix로 변환하는 함수
+    - modeling_dmatrix(dfy, dfX) : dmatrix로 변환 된 X 데이터를 사용하여 OLS 모델링 함수
+    - modeling_non_const(formula, data) : 상수항 포함 데이터 프레임을 사용하여 OLS 모델링 함수
+
+#### OLS report 분석
+1) **예측 가중치 계수**
+    - INDUS와 AGE의 pvalue 값이 높다. 이것은 계수의 값이 0이라는 의미로 해석할 수 있다.
+2) **성능지표**
+    - rsquared : 0.741
+    - r2_adj   : 0.733
+    - f_value  : 108.07666
+    - aic      : 3025.6085
+    - bic      : 3084.7801
+3) **조건수**
+    - 매우 높음
+    - 다중공선성 발생 : 독립변수간 스케일의 차이 또는 독립변수간의 강한 상관관계 원인
+
+```python
+f_trans_X = dmatrix_X_df(formula, df)
+f_model, f_result = modeling_dmatrix(dfy, f_trans_X)
+f_model_2, f_result_2 = modeling_non_const("MEDV ~ " + formula, df)
+
+print(f_result_2.summary())
+```
+![f_report.jpg](./images/model_1/f_report.jpg)
+
+### 1-3. 교차검증
+- **함수 사용**
+    - cross_val_func(cv, data, formula) : KFold를 사용한 데이터 교차검증 함수
+    - df_split_train_model(data, formula, test_size, seed) : train_test_split 패키지를 사용하여 random_seed 값을 바꿔서 새로운 데이터를 생성해주는 교차검증 함수
+    - calc_r2(data, df_test, result) : df_split_train_model에서 반환 된 테스트 데이터와 모델 객체로 모델의 결정계수값을 계산하는 함수
+        - 교차검증에서 검증 데이터를 사용한 모델의 결정계수를 구하기 위해서 훈련 모델을 재사용하면 안된다. 이때는 결정계수 값의 수식을 사용하여 직접 계산해야 한다.
+
+#### KFold 방식 교차검증 분석
+- **과최적화 없음**
+    - test score : 0.74268
+    - train score : 0.71206
+
+```python
+train_s, test_s = cross_val_func(6, df, "MEDV ~" + formula)
+train_s, test_s
+```
+![f_cv_score.jpg](./images/model_1/f_cv_score.jpg)
+
+#### train test split 패키지를 사용한 교차검증
+
+```python
+train_rsquared = []
+test_rsquared = []
+
+for seed_i in range(10) :
+
+    ## df, train_test_split의 test_size, random_seed 값을 파라미터로 사용
+    (df_train, df_test, result) = df_split_train_model(
+                                            df, "MEDV ~ " + formula, 0.2, seed_i)
+    train_rsquared.append(result.rsquared)
+    test_rsquared.append(calc_r2(df, df_test, result))
+
+cv_df = pd.DataFrame({"train_r2" : train_rsquared, "test_r2" : test_rsquared},
+                     columns=["train_r2", "test_r2"])
+cv_df.loc["mean"] = cv_df.mean(axis=0)
+cv_df
+```
+![f_cv_score_2.jpg](./images/model_1/f_cv_score_2.jpg)
+
+### 1-4. 잔차의 정규성 검정 : 쟈크베라 검정
+- `올바른 모형의 잔차는 정규분포를 따른다.`
+    - 잔차는 정규분포를 따르는 **잡음(오차:disturbance)**을 선형변환한 것과 같으므로 정규분포를 따른다.
+    - 잡음의 기대값이 x에 상관없이 0이므로, 잔차의 기대값도 x에 상관없이 0이어야 한다.
+- `자크베라 검정값의 의미`
+    - pvalue : 귀무가설 "이 분포는 정규분포이다."에 대한 유의확률. 0에 가까울 수록 귀무가설이 기각된다. 유의수준보다 높을 수록 귀무가설을 채택할 수 있다.
+    - skew : 0에 가까울 수록 정규분포에 가깝다는 의미
+    - kurtosis : 값이 작을 수록 정규분포에 가깝다는 의미
+- **함수 사용**
+    - resid_jbtest_df(models, q=None) : 자크베라 검정 값을 데이터 프레임으로 반환하는 함수 
+
+#### 자크베라 검정값 분석
+- **잔차의 정규성 검증** 
+    - model 1의 잔차는 정규분포가 아니다.  
+    - pvalue : 0.00
+    - skew : 1.52
+    - kurtosis : 8.28
+
+```python
+models = ["f_result_2"]
+resid_jbtest_df(models)
+```
+![f_jb_test.jpg](./images/model_1/f_jb_test.jpg)
 
 
-### 6-8. 독립변수의 상관관계 : 부분회귀 플롯
-- `독립변수간의 의존성을 제거한 상관관계를 나타낸다.`
-    - 모델링을 할때 마다 독립변수가 종속변수에 미치는 영향을 나타내는 가중치 값이 변화한다.
-    - 이러한 이유는 독립변수간 상관관계(의존성)에 의해 독립변수의 비선형 변형으로부터 영향을 받기 때문이다.
-    - 독립변수와 종속변수의 순수한 상관관계를 알기 위해서 부분회귀 플롯을 사용한다.
-- `부분회귀 플롯, CCPR을 사용하여 다른 변수의 의존성을 제거한 상관관계를 확인할 수 있다.`
+### 1-5. 잔차의 정규성 검정 : QQ 플롯
+- **분포의 양 끝부분이 바깥으로 휘어져 있으므로 잔차의 분포는 정규분포라고 할 수 없다.**
+
+```python
+plt.figure(figsize=(8, 6))
+sp.stats.probplot(f_result_2.resid, plot=plt)
+plt.show() ;
+```
+![f_qq.jpg](./images/model_1/f_qq.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
