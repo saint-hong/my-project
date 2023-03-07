@@ -2037,6 +2037,213 @@ plt.show() ;
 4) 잔차의 정규성 검정인 자크베라 검정 값이 f3 모델에 비해 커졌으므로 잔차의 정규성이 더 작아졌고, QQ 플롯과 표준화 잔차의 분포도를 통해서 아웃라이어를 확인 할 수 있었다. 1차로 아웃라이어를 제거한 이후 새로운 포뮬러를 적용한 모델에서 다시 아웃라이어를 제거해도 괜찮은지 확인 해 볼 필요가 있다. 레버리지와 잔차가 큰 데이터는 하나라도 모형의 성능에 영향을 주기때문이다.
 5) **다음 모델링에서는 f4 모델에서 발생한 아웃라이어를 제거하고, 비선형 변형하지 않은 독립변수인 PTRATIO와 B를 추가로 변형할 것이 있다면 적용하여 모델의 성능을 더 개선시켜 보기로 한다.** 또한 변수선택 VIF 방법을 사용하여 제거할 독립변수를 적용해 보기로 한다.
 
+## 7. 모델링 7 : m_f7
+
+#### 요약
+- formula_4 + 2차 아웃라이어 제거
+- 30개의 폭스 추천 아웃라이어 제거
+- 사용한 데이터 : df_3
+
+### 7-1. 아웃라이어 측정 및 제거
+- **formula_4_6 + 아웃라이어 1차를 제거한 모델에서 30개의 아웃라이어가 다시 발생했다.**
+    - f4 적용 모델의 표준화 잔차 분포에서 나타난 아웃라이어를 계산하고 30개를 제거하였다. 현재 데이터는 1차로 제거한 아웃라이어 49개와 2차로 제거한 30개까지 총 79개의 아웃라이어를 제거한상태이다.
+    - f4 모델의 성능이 아웃라이어 제거전 0.87이었는데 아웃라이어를 제거한 후 같은 formula를 적용하였을때 0.89로 개선 되었다. 
+    - 또한 잔차의 정규성 검정을 위한 자크베라 검정값도 개선되었다.
+
+```python
+ol_idx_2, non_ol_idx_2, non_ol_df_2 = calc_outlier_2(f4_6_result_2, df_2.iloc[:, :13], df_2["MEDV"])
+
+print(ol_idx_2)
+
+>>> print
+
+[0, 2, 4, 64, 88, 98, 152, 157, 181, 226, 256, 265, 268, 273, 284, 291, 301, 304, 341, 342, 374, 398, 405, 407, 409, 413, 489, 490, 494, 496]
+```
+#### 데이터와 아웃라이어 분포 확인
+
+```python
+from statsmodels.graphics import utils
+
+pred = f4_6_result_2.predict(df_2)
+
+plt.figure(figsize=(10, 8))
+ax = plt.subplot()
+plt.scatter(df_2["MEDV"], pred)
+plt.scatter(df_2.MEDV[ol_idx_2], pred[ol_idx_2], s=200, c="r", alpha=0.5)
+utils.annotate_axes(range(len(ol_idx_2)), ol_idx_2,
+                    list(zip(df_2.MEDV[ol_idx_2], pred[ol_idx_2])),
+                    [(-15, 15)] * len(ol_idx_2), size="small", ax=ax)
+
+plt.title("formula_4_6 모델의 아웃라이어", y=1.05, fontsize=15)
+plt.show() ;
+```
+![f42_outlier_dist.jpg](./images/model_7/f42_outlier_dist.jpg)
+
+### 7-2. outlier_2 제거 후 formula_4로 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+- 비선형 변형을 적용한 독립변수의 예측 가중치들의 pvalue 값이 전반적으로 낮아졌다. 
+    - 그러나 INDUS, ZN, CRIM 비선형 변수일부와 RAD 2와 6, RM 7, 5 클래스 변수 일부는 pvalue가 높아졌다. 
+    - 즉 이 독립변수들은 가중치 계수가 0에 가깝다는 것을 의미한다. 
+2) **성능 지표**
+- rsquared : 0.897 (개선됨)
+- r2_adj : 0.889 (개선됨)
+- f_value : 122.7 (낮아짐)
+- aic : 2014 (개선됨)
+- bic : 2137 (개선됨)
+
+```python
+f4_trans_X = dmatrix_X_df(formula_4_6, df_2.iloc[:, :13], ol_idx_2)
+f4_model_non_ol, f4_result_non_ol = modeling_dmatrix(non_ol_df_2["MEDV"], f4_trans_X,)
+f4_model_2_non_ol, f4_result_2_non_ol = modeling_non_const("MEDV ~ " + formula_4_6, non_ol_df_2)
+print(f4_result_2_non_ol.summary())
+```
+![f42_report_1.jpg](./images/model_7/f42_report_1.jpg)
+![f42_report_2.jpg](./images/model_7/f42_report_2.jpg)
+
+### 7-3. 성능 지표 비표
+
+```python
+f4_non_ol_stats_df = stats_to_df(f4_6_stats_df, "f4_result_2_non_ol")
+f4_non_ol_stats_df
+```
+![f42_stats_df.jpg](./images/model_7/f42_stats_df.jpg)
+
+### 7-4. 교차 검증
+- **교차검증 : 과최적화 없음**
+    - test score : 0.89843
+    - train score : 0.87530
+
+#### KFold를 사용한 교차 검증
+
+```python
+train_s, test_s = cross_val_func(5, non_ol_df_2, "MEDV ~ " + formula_4_6)
+train_s, test_s
+```
+![f42_cv_score.jpg](./images/model_7/f42_cv_score.jpg)
+
+### 7-5. 잔차의 정규성 검정 : 자크베라 검정
+- **잔차의 정규성 검증 : pvalue를 통해 잔차가 정규분포에 가까워 졌다는 것을 알 수 있다. skew 값이 거의 0에 근접한 것을 볼 수 있다.**
+    - pvalue : 0.0  -> 0.11
+    - skew : 1.52 -> 0.78 -> 0.39 -> 0.36 -> 0.44 -> 0.23
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53 -> 4.00 -> 3.20
+
+
+### 7-6. 잔차의 정규성 검정 : QQ플롯
+- **잔차의 분포가 거의 직선에 가까워 졌다.** 
+    - 양쪽 끝에 중심분포와 떨어진 아웃라이어들이 존재한다. 이 데이터들을 제거 해야하는지에 대해서는 좀 더 고려해보아야 한다.
+
+```python
+plt.figure(figsize=(8, 5))
+plt.subplot(121)
+sp.stats.probplot(f4_6_result_2.resid, plot=plt)
+plt.title("f4 model outlier 제거 전")
+
+plt.subplot(122)
+sp.stats.probplot(f4_result_2_non_ol.resid, plot=plt)
+plt.title("f4 model outlier 제거 후")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f42_qq.jpg](./images/model_7/f42_qq.jpg)
+
+
+### 7-7. 표준화 잔차 분포
+- **아웃라이어 제거 후 3보다 큰 잔차들이 제거되었다.**
+    - 2보다 큰 잔차도 아웃라이어로 볼 수 있지만, 폭스추천값을 적용하였으므로 제거하지 않는다.
+
+```python
+plt.figure(figsize=(8, 6))
+plt.stem(f4_result_2_non_ol.resid_pearson)
+plt.axhline(3, c="g", ls="--")
+plt.axhline(-3, c="g", ls="--")
+plt.show() ;
+```
+![f42_resid_dist_1.jpg](./images/model_7/f42_resid_dist_1.jpg)
+
+
+### 7-8. 잔차의 누적 분포
+- **잔차의 분포가 정규분포에 가까워 졌다.**
+    - 특히 f4 모델의 잔차 분포에서 오른쪽 꼬리에서 나타났던 잔차 샘플들이 제거 되었다.
+
+```python
+plt.figure(figsize=(8, 6))
+sns.distplot(f4_result_2_non_ol.resid, rug=False, kde=True, color="k")
+plt.show() ;
+```
+![f42_resid_dist_2.jpg](./images/model_7/f42_resid_dist_2.jpg)
+
+### 7-9. VIF, Correlation, ANOVA
+- vif : NOX, CRIM의 비선형 변형 독립변수들의 값이 크게 나타남
+- corr : NOX, INDUS, LSTAT, DIS, TAX, AGE의 상관관계가 큰 것으로 보인다.
+- anova : DIS 2차형, CRIM 3차형, ZN, AGE, TAX의 pvalue가 이전 보다 높아졌다.
+
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f4_trans_X, f4_result_2_non_ol, 0.6)
+vca_df
+```
+![f42_vca_df_1.jpg](./images/model_7/f42_vca_df_1.jpg)
+![f42_vca_df_2.jpg](./images/model_7/f42_vca_df_2.jpg)
+
+### 7-10. 상관관계 히트맵
+- RM의 범주형 처리된 값 중 6과 7은 여전히 강한 상관관계가 나타남
+- INDUS, DIS, NOX, CRIM 등 2차, 3차 비선형 변형을 적용한 독립변수들 사이에 상관관계가 강하게 나타난다.
+- 아웃라이어 2차 제거 전 모델의 독립변수가 상관관계 그래프와 크게 변한 것은 없다. 모델링에 사용한 formula 식을 그대로 사용했기 때문인 것 같다
+
+```python
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
+plt.show() ;
+```
+![f42_corr_matrix.jpg](./images/model_7/f42_corr_matrix.jpg)
+
+## <모델링 7의 분석>
+1) f4 모델의 잔차 분포를 분석한 결과 아웃라이어가 발생한다는 것을 확인 한 후 폭스추천값을 사용하여 아웃라이어를 제거 하였다.
+2) **모델의 성능은 0.87에서 0.89로 0.9점 대로 높아졌다.** 반면에 데이터가 줄어들면서 F-검정 값은 다소 높아졌다. 1차 아웃라이어 제거에서도 나타났던 현상으로, 데이터 표본이 적을 수록 데이터 적합도가 줄어든다고 볼 수 있다.
+3) 잔차의 정규성 검정을 위한 자크베라 검정값은 pvalue가 처음으로 0.00 보다 늘어났다. **귀무가설을 채택할수 있으므로 잔차가 정규성에 가깝다고 볼 수 있다.** skew 값도 0에 근접한 것을 볼 수 있다. 표준화 잔차 분포에서 2보다 큰 값의 잔차가 여전히 19개로 나타나지만, 폭스 추천값의 기준으로 보았을 때 제거 할만한 수준은 아닌 것을 보인다.
+4) formula 식을 변형한 것은 아니므로 독립변수간의 상관관계는 거의 비슷한 것으로 보인다.
+5) **다음 모델링에서는 VIF 값과 상관관계가 높은 독립변수를 제거해보기로 한다.** 또한 PCA와 정규화 모델을 사용하여 다항회귀 모형에 적합한 모델을 찾아보기로 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
