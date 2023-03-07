@@ -1549,6 +1549,511 @@ plt.show() ;
 ```
 ![f3_trans_corr_matrix.png](./images/model_5/f3_trans_corr_matrix.png)
 
+## 6. 모델링 6 : m_f6
+
+#### 요약
+- formula_4 : formula_3 + scale(I(CRIM^3)) + C(np.round(RM)) + scale(I(DIS^2))
+```
+scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT) + scale(I(LSTAT**2))
+```
+
+- 독립변수의 변형 적용 : CRIM, DIS, RM
+- 사용한 데이터 : df_2
+
+#### 독립변수의 비선형 변형 요약
+- CRIM은 독립변수로서 모델에 미치는 영향이 높으면서 상관관계도 작은 변수 중 하나이다. 이러한 독립변수를 비선형 변형하였을때 성능이 어떻게 바뀌는지 확인 해본다
+- 또한 상관관계가 높은 NOX와 INDUS 변수는 공통적으로 DIS 독립변수와 상관관계가 높게 나타난다. DIS 독립변수는 formula_1에서 로그 정규분포 형태를 고려하여 로그 변형을 한 상태이다. 이러한 DIS 독립변수를 비선형 변형하였을 떄 모델의 성능이 어떻게 바뀌는지 확인 해 본다.
+ - RM는 실수형 데이터이지만 4~8사이에 데이터가 분포되어 있으므로 범주형 처리를 해본다. 정수형 라운딩을 할때 소수점 1자리까지로 라운딩하는 경우 성능이 변화가 있는지 확인해 본다.
+
+
+### 6-1. 비선형 변형 적용 독립변수의 분포
+
+```python
+cols = ["CRIM", "DIS", "RM"]
+N = 2
+M = 2
+
+plt.figure(figsize=(10, 8))
+for i, col in enumerate(cols) :
+    plt.subplot(N, M, i+1)
+    sns.distplot(df_2[col], rug=False, kde=True, color="k")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_crim_dis_rm_dist.jpg](./images/model_6/f4_crim_dis_rm_dist.jpg)
+
+
+#### CRIM
+- **2, 3차 변형을 적용하면 성능이 개선된다.**
+    - 0~1 사이에 데이터가 67% 가량 몰령 있다.
+- 지수분포의 형태를 보인다.    
+
+```python
+(df_2[(df_2["CRIM"] > 0) & (df_2["CRIM"] <= 1)].shape[0] / df_2.shape[0]) * 100
+
+>>> print
+
+67.02127659574468
+```
+
+- 2, 3차 비선형 변형 적용시 성능 비교
+
+```python
+crim_df_iniv, crim_df_cumula = feature_trans(df_2, "CRIM", 3)
+```
+![f4_crim_dist.jpg](./images/model_6/f4_crim_dist.jpg)
+
+### DIS
+- **2차, 3차 비선형 변형과 범주형 처리시 성능이 개선된다.**
+    - 로그정규분포의 형태를 보인다. 
+- 데이터가 실수형이지만 1~12사이에 분포되어 있는 특징이 RM 독립변수와 유사하다. DIS도 정수형 라운딩으로 테스트 해보면 좋을 것 같다.
+
+```python
+crim_df_iniv, crim_df_cumula = feature_trans(df_2, "DIS", 3)
+```
+![f4_dis_dist_1.jpg](./images/model_6/f4_dis_dist_1.jpg)
+
+- 로그 변형을 적용한 DIS의 예측값과 성능
+
+```python
+plot_pred(df_2, "np.log(DIS)", "DIS")
+```
+![f4_dis_dist_3.jpg](./images/model_6/f4_dis_dist_3.jpg)
+
+- 범주형 변형을 적용한 DIS의 예측값과 성능
+
+```python
+plot_pred(df_2, "C(np.round(DIS))", "DIS")
+```
+![f4_dis_dist_2.jpg](./images/model_6/f4_dis_dist_2.jpg)
+
+#### RM
+- **범주형 처리를 적용하면 성능이 개선된다.**
+    - 정수형 라운딩, 소수점 1자리수 라운딩 적용
+    - 4~8 사이의 실수형 데이터로 이루어져 있다. 
+    - 소수점 1자리 라운딩을 적용했을 때 성능이 가장 좋지만 교차검증에서 에러가 발생한다.
+- 실제 데이터에 대한 지식에 비추어 봤을때에도 방의 갯수라는 의미를 지녔으므로 정수형 라운딩을 하는것이 무리가 없는 것으로 보인다. 
+- 특히 라운딩을 정수형이 아닌 소수점 1자리로 한 경우 성능이 크게 좋아지는 것을 확인할 수 있지만 모델 전체에 어떤 영향을 주는지는 생각해 보아야 하는 문제이다.
+
+
+```python
+plt.figure(figsize=(8, 6))
+plot_pred(df_2, "RM", "RM")
+plt.show() ;
+
+plot_pred(df_2, "C(np.round(RM))", "RM")
+plt.show() ;
+
+plot_pred(df_2, "C(np.round(RM, 1))", "RM")
+plt.show() ;
+
+plt.show() ;
+```
+- 기본 RM 
+![f4_rm_dist_1.jpg](./images/model_6/f4_rm_dist_1.jpg)
+
+- 정수형 라운딩 + 범주형 처리
+![f4_rm_dist_2.jpg](./images/model_6/f4_rm_dist_2.jpg)
+
+- 소수점 1자리 라운딩 + 범주형 처리
+![f4_rm_dist_3.jpg](./images/model_6/f4_rm_dist_3.jpg)
+
+### 6-2. formula 테스트
+- formula_4 : scale(I(CRIM^2))
+- formula_4_1 : scale(I(CRIM^2)) + scale(I(CRIM^3))
+- formula_4_2 : scale(CRIM) + 기존의 로그변형 DIS와 NOX 2차의 상호작용
+- formula_4_3 : scale(CRIM) + 기존의 로그변형 DIS와 INDUS 2차의 상호작용
+- formula_4_4 : CRIM 3차 변형 + DIS 2차 변형
+- formula_4_5 : scale(CRIM) + DIS 2차 변형 + RM 정수 라운딩
+- formula_4_6 : CRIM 3차 변형 + DIS 2차 변형 + RM 정수 라운딩
+- formula_4_7 : CRIM 3차 변형 + DIS 2차 변형 + RM 정수 라운딩 (범주형 처리 안함)
+- formula_4_8, 9, 10 : 모든 독립변수의 소수점 1라운딩은 성능이 크게 좋아지지만 교차검증에서 train, test 데이터의 데이터 불일치 에러가 발생하므로 과최적화를 확인할 수 없었다. DIS를 정수라운딩도 같은 에러가 발생했다.
+- 에러가 발생한 8,9,10을 제외한 formula를 모델링에 적용하고 성능을 비교해 본다.
+
+### 6-3. formula_4 모형 생성 및 테스트 결과
+- **formula_4_6의 성능이 가장 좋고, 전반적으로 formula_3의 성능 0.852보다 더 좋아졌다.**
+- formula_4_6의 모델은 교차검증을 했을때 과최적합이 발생하지 않은 것으로 보인다.
+- fromula_4_7의 모델은 성능은 떨어지지만 F-검정 값이 가장 낮은 것으로 보아 비선형 변형 적용으로 인한 데이터의 적합도가 가장 좋은 것으로 나타났다. RM의 정수라운딩 후 범주형 처리를 하지 않은 것의 영향으로 보인다.
+
+#### formula 식의 이름을 생성하여, 모델링을 하고 교차검증 값을 반환하는 코드
+
+```python
+T = 8
+
+## formula4의 이름 생성 : ["formula_4", "formula_4_1", "formula_4_2"] 
+formula_4_models = [["formula_4_" + str(i) if i !=0 else "formula_4"][0]
+                   for i in range(T)]
+
+## formula4의 요약 이름 생성 : ["f_4", "f_4_1", "f_4_2"]
+formula_4_cols = [["f_4_" + str(i) if i !=0 else "f_4"][0]
+                   for i in range(T)]
+
+model_stats = [0] * T
+for i, f in enumerate(formula_4_models) :
+    eval_f = eval(f)
+    f4_model_2, f4_result_2 = modeling_non_const("MEDV ~ " + eval_f, df_2)
+    train_s, test_s = cross_val_func(5, df_2, "MEDV ~ " + eval_f)
+    calc_stats = (
+        f4_result_2.rsquared,
+        f4_result_2.rsquared_adj,
+        f4_result_2.fvalue,
+        f4_result_2.aic,
+        f4_result_2.bic,
+        train_s[0],
+        test_s[0])
+    model_stats[i] = calc_stats
+
+stats_names = ["r2", "r2_adj", "f_value", "aic", "bic", "train_s", "test_s"]
+formula_4_modeling = pd.DataFrame(model_stats, columns=stats_names)
+formula_4_modeling.index = formula_4_cols
+formula_4_modeling = formula_4_modeling.sort_values("r2", ascending=False).T
+
+formula_4_modeling
+```
+![f4_scores.jpg](./images/model_6/f4_scores.jpg)
+
+
+### 6-4. formula_4_6로 모델링
+- **formula_4_6는 성능이 가장 좋음**
+    - formula_4_7은 성능은 떨어지지만 데이터의 적합도(F-검정)가 좋음
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+- 정수형 라운딩 변형을 한 RM의 p-value 가 높아졌다. 가중치가 종속변수에 미치는 영향이 0에 가깝다고 볼수 있다.
+- formula_3 모델의 결과보다 INDUS와 NOX의 2차형 변형들의 p-value가 다소 높아졌고,  기본형인 ZN의 p-value는 낮아졌다.
+- 로그변형을 했었던 DIS를 2차 변형한 후에도 p-value는 거의 0에 가까운 것으로 나타났다. 
+- 전반적으로 다항회귀 모형의 차수가 늘어나면서 p-value 값이 특정 값에 쏠리는 형태가 보인다.
+2) **성능 지표**
+- rsquared : 0.869 (개선됨)
+- r2_adj : 0.860 (개선됨)
+- f_value : 100.4 (개선됨)
+- aic : 2329 (개선됨)
+- bic : 2454 (개선됨)
+- **CRIM, DIS, RM의 비선형 변형으로 모델의 성능이 향상 되었다.**
+    - 다항회귀의 차수가 늘어날 수록 모형의 복잡도가 커지면 다중공선성이나 과최적화가 발생할 수 있는데 아직까지 그런 문제는 나타나지 않았다.
+
+```python
+f4_6_trans_X = dmatrix_X_df(formula_4_6, df_2)
+f4_6_model, f4_6_result = modeling_dmatrix(dfy.iloc[non_ol_idx], f4_6_trans_X)
+f4_6_model_2, f4_6_result_2 = modeling_non_const("MEDV ~ " + formula_4_6, df_2)
+
+print(f4_6_result_2.summary())
+```
+![f4_report_1.jpg](./images/model_6/f4_report_1.jpg)
+![f4_report_2.jpg](./images/model_6/f4_report_2.jpg)
+
+### 6-5. 성능 지표 비교
+
+```python
+f3_2_stats_df = f4_6_stats_df.iloc[:, 0:5]
+f4_6_stats_df = stats_to_df(f3_2_stats_df, "f4_6_result_2")
+f4_6_stats_df
+```
+![f4_stats_df.jpg](./images/model_6/f4_stats_df.jpg)
+
+### 6-6. 교차검증
+- **교차검증 : 과최적화 없음**
+    - test score : 0.86989
+    - train score : 0.84551
+
+#### KFold를 사용한 교차검증
+
+```python
+train_s, test_s = cross_val_func(6, df_2, "MEDV ~ " + formula_4_6)
+train_s, test_s
+```
+![f4_cv_scores.jpg](./images/model_6/f4_cv_scores.jpg)
+
+### 6-7. 잔차의 정규성 검정 : 자크베라 검정
+- **잔차의 정규성은 다소 낮아졌다. 비선형 변형으로 모델의 복잡도가 높아지면서 발생하는 것으로 보인다.**
+    - pvalue : 0.0 
+    - skew : 1.52 -> 0.78 -> 0.39 -> 0.36 -> 0.44
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53 -> 4.00
+
+```python
+models = ['f_result_2', 'f1_result_2',
+          'f2_result_2', 'f2_result_2_non_ol', 'f3_2_result_2', 'f4_6_result_2']
+
+resid_jbtest_df(models)
+```
+![f4_jb_test.jpg](./images/model_6/f4_jb_test.jpg)
+
+
+### 6-8. 잔차의 정규성 검정 : QQ플롯
+- **전체적인 형태는 직선에 가까워 졌으나 오른쪽 상단에 멀리 떨어지는 잔차들이 생겨났다.**  
+    - 모델의 복잡도가 커지면서 아웃라이어가 생긴 것으로 보인다.
+
+```python
+plt.figure(figsize=(10, 6))
+plt.subplot(121)
+sp.stats.probplot(f3_2_result_2.resid, plot=plt)
+plt.title("formla_3_2")
+
+plt.subplot(122)
+sp.stats.probplot(f4_6_result_2.resid, plot=plt)
+plt.title("formla_4_6")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_qq.jpg](./images/model_6/f4_qq.jpg)
+
+### 6-9. 잔차 분석
+- `모델의 적합성은 잔차의 분포를 통해서 판단 할 수 있다.`
+    - 잔차의 누적 분포 : 잔차는 정규분포를 따라야 한다. (확률론적 선형회귀 모형의 조건에 의해서)
+    - 표준화 잔차 분포 : 아웃라이어를 파악할 수 있다.
+    - 잔차와 독립변수의 분포 : 비선형 또는 선형 관계가 없어야 한다.
+    - 잔차와 종속변수의 분포 : 기울기가 1인 직선이어야 한다.
+        - 현실 데이터는 직선보다는 타원형으로 나타난다.
+
+#### 잔차의 누적 분포
+- **현재 모델의 잔차는 완전하지는 않지만 정규분포 형태를 띄고 있다.**
+    - 아웃라이어 등으로 인해 오른쪽 끝부분이 두꺼운 형태이다.
+    - 스튜던트t 분포와도 유사하다.
+
+```python
+plt.figure(figsize=(8, 6))
+sns.distplot(f4_6_result_2.resid, rug=False, kde=True, color="k")
+plt.show() ;
+```
+![f4_resid_dist.jpg](./images/model_6/f4_resid_dist.jpg)
+
+#### 표준화 잔차 분포
+- **현재 모델에도 아웃라이어가 존재한다.**
+    - 표준화 잔차는 result 객체의 resid_pearson 매서드에 저장 되어 있다.
+    - 2~4 보다 큰 값을 아웃라이어로 볼 수 있다.
+- 3보다 큰 값을 기준으로 5개의 아웃라이어가 있는 것으로 보인다.
+
+```python
+plt.figure(figsize=(8, 6))
+plt.stem(f4_6_result_2.resid_pearson)
+plt.axhline(3, c="g", ls="--")
+plt.axhline(-3, c="g", ls="--")
+plt.show() ;
+```
+![f4_resid_dist_2.jpg](./images/model_6/f4_resid_dist_2.jpg)
+
+- 아웃라이어의 갯수
+
+```python
+print("2보다 큰 값의 갯수 : ", len(np.where(f4_6_result_2.resid_pearson > 2)[0]))
+print("3보다 큰 값의 갯수 : ", len(np.where(f4_6_result_2.resid_pearson >= 3)[0]))
+print("4보다 큰 값의 갯수 : ", len(np.where(f4_6_result_2.resid_pearson >= 4)[0]))
+print("-2보다 작은 값 : ", len(np.where(f4_6_result_2.resid_pearson < -2)[0]))
+print("-3보다 작은 값: ", len(np.where(f4_6_result_2.resid_pearson <= -3)[0]))
+print("-4보다 작은 값 : ", len(np.where(f4_6_result_2.resid_pearson <= -4)[0]))
+
+>>> print
+
+2보다 큰 값의 갯수 :  14
+3보다 큰 값의 갯수 :  4
+4보다 큰 값의 갯수 :  1
+-2보다 작은 값 :  6
+-3보다 작은 값:  0
+-4보다 작은 값 :  0
+```
+
+#### 비선형 변형을 한 독립변수와 잔차의 분포 비교
+- CRIM, INDUS, NOX, RM, DIS, LSTAT
+- `모델의 적합도가 높을 수록 잔차와 독립변수의 분포는 비선형 또는 상관관계가 없어야 한다.`
+    - 확률론적 선형회귀 모형의 **조건부 독립 가정**에 의해서 잔차는 독립변수의 영향을 받지 않아야 한다.
+    - 비선형 또는 선형 관계가 있다면 모델의 적합도가 떨어진다는 것을 의미한다.
+- **현재 모델에서 잔차와 비선형 변형 적용 독립변수 사이에 뚜렷한 상관관계는 없는 것으로 보인다.**
+    - formula_1과 formula_4_6 모델의 잔차를 사용하여 비교
+
+#### CRIM과 잔차의 분포
+- **비선형 변형을 적용하여 비선형 또는 선형관계가 희미해진 것으로 보인다.**
+
+```python
+col = "CRIM"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_crim.jpg](./images/model_6/f4_resid_crim.jpg)
+
+
+#### INDUS와 잔차의 분포
+- **비선형 변형 적용 후 비선형 또는 선형관계가 희미해진 것으로 보인다.**
+
+```python
+col = "INDUS"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_indus.jpg](./images/model_6/f4_resid_indus.jpg)
+
+#### NOX와 잔차의 분포
+- **비선형 변형을 적용한 후 비선형 또는 선형관계가 희미해진 것으로 보인다.**
+
+```python
+col = "NOX"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_nox.jpg](./images/model_6/f4_resid_nox.jpg)
+
+#### DIS와 잔차의 분포
+- **비선형 변형을 적용한 후 비선형 또는 선형관계가 희미해진 것으로 보인다.**
+
+```python
+col = "DIS"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_dis.jpg](./images/model_6/f4_resid_dis.jpg)
+
+#### RAD와 잔차의 분포
+- **범주형 처리를 적용한 후 분포가 위 아래로 흩어진 것을 볼 수 있다.**
+
+```python
+col = "RAD"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_rad.jpg](./images/model_6/f4_resid_rad.jpg)
+
+#### LSTAT와 잔차의 분포
+- **비선형 변형 적용 후 비선형 또는 선형관계가 희미해진 것으로 보인다.**
+
+```python
+col = "LSTAT"
+
+plt.figure(figsize=(6, 8))
+plt.subplot(211)
+plt.scatter(x=df[col], y=f1_result_2.resid, alpha=0.5)
+plt.title("f1 model의 잔차와 {}".format(col))
+
+plt.subplot(212)
+plt.scatter(x=df_2[col], y=f4_6_result_2.resid, alpha=0.5)
+plt.title("f4 model의 잔차와 {}".format(col))
+
+plt.tight_layout()
+plt.show() ;
+```
+![f4_resid_lstat.jpg](./images/model_6/f4_resid_lstat.jpg)
+
+#### 잔차와 종속변수의 분포
+- `좋은 모델일 수록 예측값과 종속값이 같기때문에 잔차와 종속변수 분포는 기울기가 1인 직선 형태가 된다.`
+    - 그러나 현실 데이터는 직선이 아닌 타원 형태로 나타난다.
+- **현재 모델의 분포는 직선형태보다 타원형 분포에 가깝고, 기울기는 양수인 것으로 보인다.**
+
+```python
+plt.figure(figsize=(8, 6))
+plt.scatter(x=df_2["MEDV"], y=resid, alpha=0.5)
+plt.xlabel("MEDV")
+plt.ylabel("pred")
+plt.show() ;
+```
+![f4_resid_dist_5.jpg](./images/model_6/f4_resid_dist_5.jpg)
+
+
+### 6-10. VIF, Correlation, ANOVA
+- vif : NOX, CRIM의 비선형 변형 독립변수들의 값이 크게 나타남
+- corr : NOX, INDUS, LSTAT, DIS, TAX, AGE의 상관관계가 높은 것으로 보인다.
+- anova : NOX, AGE, INDUS의 p-value 값이 높으므로 가중치가 0에 가깝다는 것으로 볼 수 있다.
+    - 즉 종속변수에 영향을 미치지 않는다.
+
+#### vca 지표
+
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f4_6_trans_X, f4_6_result_2, 0.6)
+vca_df
+```
+![f4_vca_df_1.jpg](./images/model_6/f4_vca_df_1.jpg)
+![f4_vca_df_2.jpg](./images/model_6/f4_vca_df_2.jpg)
+
+#### 상관관계 히트맵
+- **범주형 처리를 한 변수들은 상관관계가 상대적으로 작다.**
+    - RM의 범주형 처리된 값 중 6과 7의 강한 상관관계가 나타남
+- **2, 3차형 변형을 적용한 변수들은 상관관계가 상대적으로 큰 편으로 보인다.**
+    - INDUS, DIS, NOX, CRIM 등 2차, 3차 비선형 변형을 적용한 독립변수들 사이에 상관관계 강해지는 것으로 나타남
+- 비선형 변형을 하지 않은 독립변수 중에는 TAX가 다른 독립변수와의 상관관계가 높은 것으로 보인다. 그러나 상관관계는 높지만 anova 값이나 VIF 값은 적합한 것으로 보인다.
+
+
+```python
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
+plt.show() ;
+```
+![f4_trans_corr_matrix.jpg](./images/model_6/f4_trans_corr_matrix.jpg)
+
+## <모델링 6의 분석>
+1) **CIRM, DIS, RM 독립변수를 각각 비선형 변형을 적용하여 모델의 성능이 개선된 것을 볼 수 있었다.** 독립변수의 비선형 변형을 적용할 때에 독립변수의 분포 형태뿐만 아니라 잔차와 독립변수의 분포 형태를 파악해야 한다는 것을 알 수 있었다. 좋은 모델일 수록 잔차와 독립변수 사이에는 어떠한 선형관계나 비선형관계가 있으면 안되기때문이다. 왜냐하면 선형회귀모형의 확률적 조건에서 오차는 조건부독립의 성질 띈다. 즉 독립변수에 영향을 받지 않는다는 조건인데, 잔차는 오차의 변형 형태이므로 같은 성질을 갖는다.
+2) 또한 선형회귀모델은 새로운 독립변수가 늘어날 수록 결정계수 값이 함께 커지는 특징이 있는데, 비선형 변형 등 다항회귀 모형으로 차수가 점차 커질 수록 모델의 성능은 계속 커지게 된다. **따라서 차수가 늘어날 수록 결정계수 값인 R2 뿐만 아니라, 새로 만든 독립변수마다 패널티 값을 적용하여 계산한 조정결정계수 값도 중요하게 보아야 한다.**
+3) 다항회귀 모형의 차수가 커질 수록 모형의 성능이 커지지만 반대로 훈련 데이터에 과최적화가 발생하여 테스트 데이터를 학습한 경우에는 성능이 오히려 저하 될 수있다. **현재까지의 비선형 변형적용 모델은 과최적화가 발생하지 않았다.**
+4) 잔차의 정규성 검정인 자크베라 검정 값이 f3 모델에 비해 커졌으므로 잔차의 정규성이 더 작아졌고, QQ 플롯과 표준화 잔차의 분포도를 통해서 아웃라이어를 확인 할 수 있었다. 1차로 아웃라이어를 제거한 이후 새로운 포뮬러를 적용한 모델에서 다시 아웃라이어를 제거해도 괜찮은지 확인 해 볼 필요가 있다. 레버리지와 잔차가 큰 데이터는 하나라도 모형의 성능에 영향을 주기때문이다.
+5) **다음 모델링에서는 f4 모델에서 발생한 아웃라이어를 제거하고, 비선형 변형하지 않은 독립변수인 PTRATIO와 B를 추가로 변형할 것이 있다면 적용하여 모델의 성능을 더 개선시켜 보기로 한다.** 또한 변수선택 VIF 방법을 사용하여 제거할 독립변수를 적용해 보기로 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
