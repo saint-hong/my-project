@@ -513,8 +513,10 @@ plt.show()
     - 사용한 데이터 : df_4
 
 ## 1. 모델링 1 : m_f1
-- formula : 독립변수 데이터와 종속변수 데이터의 변형 없이 적용
-    - 'CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT'
+- **formula** : 독립변수 데이터와 종속변수 데이터의 변형 없이 적용
+```
+CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT
+```
 
 ### 1-1. formula 정의
 
@@ -530,10 +532,6 @@ formula
 
 ### 1-2. formula를 사용하여 OLS 모델링
 - 상수항 미포함 모델과 상수항 포함 모델 각각 2가지로 생성 및 모수추정 후 OLS report 분석
-- **함수 사용**
-    - dmatrix_X_df(formula, df, outlier_idx=None) : 상수항 미포함 데이터 프레임을 dmatrix로 변환하는 함수
-    - modeling_dmatrix(dfy, dfX) : dmatrix로 변환 된 X 데이터를 사용하여 OLS 모델링 함수
-    - modeling_non_const(formula, data) : 상수항 포함 데이터 프레임을 사용하여 OLS 모델링 함수
 
 #### OLS report 분석
 1) **예측 가중치 계수**
@@ -572,11 +570,8 @@ print(f_result_2.summary())
 ![f_report.jpg](./images/model_1/f_report.jpg)
 
 ### 1-3. 교차검증
-- **함수 사용**
-    - cross_val_func(cv, data, formula) : KFold를 사용한 데이터 교차검증 함수
-    - df_split_train_model(data, formula, test_size, seed) : train_test_split 패키지를 사용하여 random_seed 값을 바꿔서 새로운 데이터를 생성해주는 교차검증 함수
-    - calc_r2(data, df_test, result) : df_split_train_model에서 반환 된 테스트 데이터와 모델 객체로 모델의 결정계수값을 계산하는 함수
-        - 교차검증에서 검증 데이터를 사용한 모델의 결정계수를 구하기 위해서 훈련 모델을 재사용하면 안된다. 이때는 결정계수 값의 수식을 사용하여 직접 계산해야 한다.
+- **과최적화 없음**
+    - train data 훈련 모델과 test data 검증 모델의 성능 값에 차이가 크지 않다.
 
 #### KFold 방식 교차검증 분석
 - **과최적화 없음**
@@ -618,8 +613,6 @@ cv_df
     - pvalue : 귀무가설 "이 분포는 정규분포이다."에 대한 유의확률. 0에 가까울 수록 귀무가설이 기각된다. 유의수준보다 높을 수록 귀무가설을 채택할 수 있다.
     - skew : 0에 가까울 수록 정규분포에 가깝다는 의미
     - kurtosis : 값이 작을 수록 정규분포에 가깝다는 의미
-- **함수 사용**
-    - resid_jbtest_df(models, q=None) : 자크베라 검정 값을 데이터 프레임으로 반환하는 함수 
 
 #### 자크베라 검정값 분석
 - **잔차의 정규성 검증** 
@@ -647,16 +640,20 @@ plt.show() ;
 ```
 ![f_qq.jpg](./images/model_1/f_qq.jpg)
 
-### 1-6. 모델링 1의 분석
+## <모델링 1의 분석>
 1) 독립변수를 그대로 적용한 formula를 사용한 모델1의 OLS reoprt에서 조건수가 높다는 경고가 확인 되었다. 이것은 다중공선성 현상이 발생했기 때문인데, 다중공선성은 독립변수간의 스케일이 서로 다르거나 상관성이 높은 경우 발생한다. 다중공선성은 모형의 과최적화의 원인이 될 수 있다. **따라서 다음 모델링에서 조건수를 낮추기 위해 독립변수의 스케일링을 적용 한다.**
 2) 교차검증을 한 결과 학습 데이터를 사용한 경우와 검증 데이터를 사용한 경우의 성능이 크게 차이나지 않는 것으로 보아 **과최적화는 발생하지 않은 것으로 보인다.**
 3) 데이터와 모델이 적합한 경우 잔차는 정규분포를 따르게 되는데, 자크베라 검정으로 정규성을 검정한 결과 잔차가 정규분포가 아닌 것으로 보인다. **데이터와 모델의 적합성을 더 향상시켜줄 필요가 있다.**
 4) QQ 플롯으로 잔차의 정규분포를 측정하면 양쪽 끝이 바깥으로 꺾인 형태를 나타낸다. 또한 중심 분포 또한 직선 형태가 아닌 곡선 형태를 나타내는 것으로 보아 **잔차는 정규분포를 따르지 않는다.**
 5) 1차 모델링에서 분석한 선형회귀 모형
-    - $y = 36.45949 const -0.10801 CRIM + 0.04642 ZN + 0.02056 INDUS + 2.68673 CHAS -17.76661 NOX + 3.80987 RM + 0.00069 AGE -1.47557 DIS + 0.30605 RAD -0.01233 TAX -0.95275 PTRATIO + 0.00931 B -0.52476 LSTAT$
+    - $y = 36.45949 const - 0.10801 CRIM + 0.04642 ZN + 0.02056 INDUS + 2.68673 CHAS - 17.76661 NOX + 3.80987 RM + 0.00069 AGE - 1.47557 DIS + 0.30605 RAD - 0.01233 TAX - 0.95275 PTRATIO + 0.00931 B - 0.52476 LSTAT$
 
 ## 2. 모델링 2 : m_f2
-- formula_1 : 'scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(DIS) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT)' 
+- **formula_1**
+```
+'scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(DIS) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT)' 
+```
+
 - **모델링 1의 OLS report에서 발생한 조건수 에러를 해결하기 위해 독립변수에 스케일링을 적용한다.**
     - 평균을 0, 표준편차를 1으로 조정한다.
 - **독립변수 중 CHAS는 범주형 데이터이므로 스케일링이 아닌 범주형 처리를 적용한다.**
@@ -723,8 +720,6 @@ plt.show() ;
 
 
 ### 2-3. formula_1을 사용하여 OLS 모델링
-- **함수 사용**
-    - dmatrix_X_df(), modeling_dmatrix(), modeling_non_const()
 
 #### < OLS report 분석 >
 1) **예측 가중치 계수**
@@ -752,8 +747,6 @@ print(f1_result_2.summary())
 ### 2-4. 성능 지표 비교
 - **모델링 1과 모델의 성능이 같다.**
     - 스케일링과 CHAS 독립변수의 범주형 처리는 모델의 성능에 영향을 미치지 않았다.
-- **함수 사용**
-    - stats_to_df(concat_df, model) : 성능지표 데이터 프레임을 병합하여 반환하는 함수
 
 ```python
 f1_stats_df = stats_to_df(f_stats_df, "f1_result_2")
@@ -812,7 +805,7 @@ r2_df
 models = ["f_result_2", "f1_result_2"]
 resid_jbtest_df(models)
 ```
-![f1_jb_test.jpg](./images/model_2/f1_jb_test)
+![f1_jb_test.jpg](./images/model_2/f1_jb_test.jpg)
 
 
 ### 2-7. 잔차의 정규성 검정 : QQ플롯
@@ -867,7 +860,7 @@ plt.show() ;
 ```
 ![f1_heatmap.jpg](./images/model_2/f1_heatmap.jpg)
 
-### 2-9. 모델링 2의 분석
+## <모델링 2의 분석>
 1) 독립변수를 그대로 formula로 사용한 첫번째 모델에서 나타난 다중공선성 현상을 스케일링을 통해서 제거 하였다. 이로인해 조건수도 크게 낮아졌다.
 2) CHAS 변수는 0과 1의 값을 갖는 카테고리 변수라는 것을 확인하였고, 범주형 처리를 적용하였다.
 3) 스케일링과 범주형 처리를 적용한 결과 모델의 성능지표와 교차검증, 잔차의 정규성 검정, VCA 지표들이 변화가 거의 없었다.
@@ -875,37 +868,210 @@ plt.show() ;
 5) 독립변수들과 종속변수의 순수한 상관관계를 알기위해서는 부분회귀플롯이나 CCPR 플롯을 사용하여 확인 할 수 있다.
 
 
+## 3. 모델링 3 : m_f3
+- **formula 변형을 위한 독립변수 비선형 변형**
+     - 스케일링 + C(CHAS) 외에 다른 독립변수의 분포와 비선형성을 파악한 후 비선형 변형을 적용하여 성능을 개선
+- **LSTAT의 비선형 변형**
+    - LSTAT 독립변수는 종속변수와 비선형성이 뚜렷하다.
+    - 2차, 3차형 변형을 적용하였을 때 예측 성능이 개선되는 것을 확인 할 수 있다.
+    - 2차형 변형 적용(3차형 변형은 모형의 과최적화를 일을 킬 수 있으므로 보류하기로 함)
+- **DIS의 비선형 변형**
+    - DIS 독립변수 종속변수와 비선형 관계로 나타난다. 
+    - 또한 DIS 독립변수의 분포도를 통해서 로그 정규분포 형태에 가깝다는 것을 알 수 있다.
+    - 이러한 특징을 반영하여 로그 변환을 적용하면 모델의 성능이 조금 높아지는 것을 확인 할 수 있다. (0.061->0.085)
+    - 로그 변형 적용
+- **formula_2**
+
+```
+scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(np.log(DIS)) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT) + scale(I(LSTAT**2))
+```
+
+### 3-1. 독립변수의 비선형 변형
+
+####  LSTAT 독립변수와 종속변수의 관계
+- **LSTAT 독립변수는 비선형 관계이며 2차형이 뚜렷하다.**
+    - 따라서 비선형 변형으로 2차형 변형시 성능이 개선 된다.
+    - 2차형 변형 적용
+
+```python
+test_indiv, test_cumula = feature_trans(df, "LSTAT", 3)
+```
+![f2_lstat_dist.jpg](./images/model_3/f2_lstat_dist.jpg)
+
+- 각 차수별 변형을 누적하여 적용한 성능 값
+
+```python
+test_cumula
+```
+![f2_lstat_cumula.jpg](./images/model_3/f2_lstat_cumula.jpg)
+
+#### DIS 독립변수의 변형
+- **DIS의 분포 형태가 로그 정규분포 형태를 따른다는 점을 감안하여 로그 변형을 적용한다.**
+- DIS도 비선형 관계를 띄며 비선형 변형 시 성능이 어느정도 개선 된다.
+    - 기본 사용시 r2 : 0.062
+    - 2차형 변형시 r2 : 0.095
+    - 로그 변형시 r2  : 0.085
+
+```python
+test_indiv, test_cumula = feature_trans(df, "DIS", 3)
+```
+![f2_dis_dist.jpg](./images/model_3/f2_dis_dist.jpg)
+
+- 각 차수별 누적 적용한 성능 값
+
+```python
+test_cumula
+```
+![f2_dis_cumula.jpg](./images/model_3/f2_dis_cumula.jpg)
+
+#### DIS 의 데이터 분포
+- **로그 정규분포의 형태라고 볼 수 있다.**
+    - 로그 변형 한 경우 성능이 개선된다.
+    - 로그 변형 적용
+
+```python
+plt.figure(figsize=(8, 6))
+sns.distplot(df["DIS"], rug=False, kde=True, color='k')
+plt.show()
+```
+![f2_dis_dist_2.jpg](./images/model_3/f2_dis_dist_2.jpg)
+
+#### DIS 변수를 로그 변형한 경우의 모델의 성능 비교
+- **로그 변형은 변형한 것만 적용한다.**
+    - scale(np.log(DIS))
+    - 차수 변형을 적용할 떄는 0차+1차+2차와 같이 누적하여 적용한다.
+
+```python
+dis_model, dis_result = modeling_non_const("MEDV ~ " + "DIS", df)
+dis_model_log, dis_result_log = modeling_non_const("MEDV ~ " + "scale(np.log(DIS))", df)
+
+print("DIS r2 : {}, log DIS r2 : {}".format(dis_result.rsquared, dis_result_log.rsquared)
+
+>>> print
+
+DIS r2 : 0.062, log DIS r2 : 0.085
+```
+
+### 3-2. formula_2를 사용하여 OLS 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+    - INDUS와 AGE의 pvaule 값이 바뀌었다.
+        - INDUS : 0.738 -> 0.864
+        - AGE : 0.938 -> 0.212
+    - 특히 AGE의 pvalue 값이 크게 줄어 들었다. AGE는 DIS, LSTAT와 상관관계가 컸는데, DIS와 LSTAT를 변수 변형하면서 그 의존성이 줄어든 것을 보인다.
+    - ZN의 가중치 크게 줄어들었는데, pvalue 값도 유의수준에 가깝게 접근했다. 즉 예측 가중치가 0에 가까워졌다는 것을 의미한다.
+    - 또한 LSTAT의 비선형 변형으로 가중치가 크게 늘어났는데, 기본형과 2차형이 서로 상반된 부호로 나타난다. 종속변수에 가장 큰 영향을 미치는 변수로 생각해  볼 수 있다.
+2) **성능지표 : 성능이 개선 되었다.**
+    - rsquared : 0.798
+    - r2_adj : 0.792
+    - f_value : 138.5
+    - aic : 2901
+    - bic : 2965
+
+```python
+f2_trans_X = dmatrix_X_df(formula_2, df)
+f2_model, f2_result = modeling_dmatrix(dfy, f2_trans_X)
+f2_model_2, f2_result_2 = modeling_non_const("MEDV ~ " + formula_2, df)
+
+print(f2_result_2.summary())
+```
+![f2_report.jpg](./images/model_3/f2_report.jpg)
 
 
+### 3-3. 모델의 성능 지표
+
+```python
+f2_stats_df = stats_to_df(f1_stats_df, "f2_result_2")
+f2_stats_df
+```
+![f2_stats_df.jpg](./images/model_3/f2_stats_df.jpg)
 
 
+### 3-4. 교차 검증
+- **모델링 3은 과최적화가 발생하지 않는다.**
+
+#### KFold를 사용한 교차 검증
+
+```python
+train_s, test_s = cross_val_func(6, df, "MEDV ~" + formula_2)
+train_s, test_s
+```
+![f2_cv_score.jpg](./images/model_3/f2_cv_score.jpg)
 
 
+### 3-5. 잔차의 정규성 검정 : 자크베라
+- **잔차의 정규성 검증 : 잔차의 정규성이 개선되었다.**
+    - pvalue   : 0.0 
+    - skew      : 1.52->0.78
+    - kurtosis : 8.28->6.59
 
+```python
+models = ["f_result_2", "f1_result_2", "f2_result_2"]
+resid_jbtest_df(models)
+```
+![f2_jb_test.jpg](./images/model_3/f2_jb_test.jpg)
 
+### 3-6. 잔차의 정규성 검정 : QQ플롯
+- **잔차의 분포가 선형에 가까워 졌다.**
+    - 다만 중심 분포에서 벗어난 샘플들은 여전히 존재한다. 아웃라이어의 영향으로 보인다.
 
+```python
+plt.figure(figsize=(10, 6))
+plt.subplot(121)
+sp.stats.probplot(f1_result_2.resid, plot=plt)
+plt.title("f1 모델")
 
+plt.subplot(122)
+sp.stats.probplot(f2_result_2.resid, plot=plt)
+plt.title("f2 모델")
 
+plt.tight_layout()
+plt.show() ;
+```
+![f2_qq.jpg](./images/model_3/f2_qq.jpg)
 
+### 3-7. VIF, Correlation, ANOVA
+- **vif** : LSTAT, TAX, RAD, DIS, NOX의 의존성이 크다.
+- **corr** : AGE, DIS, INDUS, NOX, TAX의 상관관계가 높다.
+    - TAX의 상관관계 값이 커짐
+- **anova** : AGE, INDUS, ZN, B, CHAS의 중요도가 낮다. 
+    - ZN의중요도가 낮아짐, pvalue가 커진것과 같은 맥락으로 보임
 
+#### vca 지표
 
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f2_trans_X, f2_result_2, 0.6)
+vca_df
+```
+![f2_vca_df.jpg](./images/model_3/f2_vca_df.jpg)
 
+#### 상관관계 히트맵
+- **각 독립변수 별 상관관계가 큰 독립변수 분석**
+    - DIS와 LSTAT의 변수 변형으로 독립변수의 상관관계 값이 변화한 것으로 보인다. 상관관계가 0.6보다 큰 것들을 확인.
+    - INDUS와 NOX는 다른 변수들과의 상관관계가 큰 것으로 보인다.
+    - RAD와 TAX는 강한 상관관계를 보인다. (0.91)
+    - CRIM : RAD
+    - INDUS : NOX, DIS, AGE, RAD, TAX, LSTAT : NOX, DIS 가장 큼
+    - NOX : INDUS, AGE, DIS, RAD, TAX : DIS 가장 큼
+    - RM : LSTAT
+    - AGE : INDUS, NOX, DIS, LSTAT
+    - DIS : ZN, INDUS, NOX, AGE, TAX, : NOX 가장 큼
+    - RAD : CRIM, INDUS, NOX, TAX : TAX 가장 큼(0.91)
+    - TAX : INDUS, NOX, RAD : RAD 가장 큼(0.91)
+    - LSTAT : INDUS, NOX, AGE, LSTAT^2
 
+```python
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn")
+plt.show() ; 
+```
+![f2_heatmap.jpg](./images/model_3/f2_heatmap.jpg)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## <모델링 3의 분석>
+1) 독립변수 중 LSTAT와 DIS의 분포를 확인하니 비선형 관계가 비교적 뚜렷하게 나타났다. 이러한 비선형 관계는 모델에 적합하지 않으므로 2차형 변형을 사용하여 비선형 관계를 조절하였다. 이로인해 모델의 성능값이 조금 개선되었고, 특히 잔차의 선형성이 개선되었다.
+2) 또한 DIS와 LSTAT와 강한 상관관계를 갖고 있었던 AGE의 pvalue 값이 크게 낮아졌다. DIS와 LSTAT의 비선형 변형의 영향을 받은 것으로 보인다.
+3) **잔차의 QQ플롯으로 확인 해 보면 여전히 중심 분포에서 떨어진 잔차들이 나타나는데, 아웃라이어의 영향으로 보인다.** 따라서 현재 formula_2를 사용한 모델에서 쿡스 디스턴스 값을 계산하고, 폭스 추천값 기준으로 아웃라이어를 결정하고 데이터에서 제거한 후 다시 모델링 결과를 파악하고자 한다.
 
 
 
