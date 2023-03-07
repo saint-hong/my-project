@@ -2207,71 +2207,368 @@ plt.show() ;
 5) **다음 모델링에서는 VIF 값과 상관관계가 높은 독립변수를 제거해보기로 한다.** 또한 PCA와 정규화 모델을 사용하여 다항회귀 모형에 적합한 모델을 찾아보기로 한다.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## 8. 모델링 8 : m_f8
+
+### 요약
+- formula_5 : formula_4 + I(PTRATIO^2) + I(AGE^2) + I(B^2)
+```
+scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(LSTAT) + scale(I(LSTAT**2))
+```
+
+- 독립변수의 변형 적용 : PTRATIO, AGE, B
+- 모든 독립변수의 비선형 변형 진행
+- 사용한 데이터 : df_3
+
+### 독립변수의 비선형 변형 요약
+1) PTRATIO, ZN, AGE, B은 비선형 변형을 적용하지 않은 독립변수들이었다. 이 독립변수들도 비선형을 변형을 적용해보고 모델의 성능이 어떻게 변하는지 확인해 본다.
+2) 비선형 변형을 할 수록 모델의 성능은 점차 향상된다. 특히 다항차수가 증가할때 성능이 증가하는 것과 연관이 있는데 모든 비선형 변형은 2차 이상은 적용하지 않았다.
+3) 다항차수가 커질 수록 모델이 과최적화 될 가능성이 커지는데 아직 과최적화라고 볼 수는 없었다. 그러나 이전의 훈련, 검증 데이터 성능의 차이보다 좀 더 커지는 현상은 나타났다.
+4) 비선형 변형 테스트
+    - PTRATIO : 2차, 3차형 변형
+    - ZN : 2차형 변형
+    - AGE : 2차형 변형
+    - B : 2차형 변형
+
+
+### 8-1. 독립변수의 비선형 변형
+
+#### PTRATIO 독립변수
+- **비선형 변형을 적용하면 성능이 어느정도 개선된다.**
+- PTRATIO와 잔차의 분포에서 비선형 또는 선형관계를 찾기 어려운 것으로 보아 모델에 적합한 데이터라고 볼 수 있다.
+    - 그러나 육안으로 보기 어렵지만 비선형 변형을 적용하여 비선형성을 줄여줄 수 있다.
+
+```python
+feature_trans(df_3, "PTRATIO", 3)
+```
+![f51_ptratio_dist.jpg](./images/model_8/f51_ptratio_dist.jpg)
+
+```python
+plt.figure(figsize=(8, 6))
+plt.plot(df_3["PTRATIO"], f4_result_2_non_ol.resid, "bo", alpha=0.5)
+plt.show() ;
+```
+![f51_ptratio_resid_dist.jpg](./images/model_8/f51_ptratio_resid_dist.jpg)
+
+#### ZN 독립변수
+- **비선형 변형을 적용하면 성능이 어느정도 개선된다.**
+- 잔차와의 분포에서 비선형 또는 선형 관계를 찾기 어렵다.
+    - 이러한 경우 비선형 변형을 적용하면 종속변수와의 비선형성을 낮추고 선형관계를 높일 수 있다.
+
+```python
+feature_trans(df_3, "ZN", 3)
+```
+![f51_zn_dist.jpg](./images/model_8/f51_zn_dist.jpg)
+
+- ZN과 잔차의 분포
+```python
+plt.figure(figsize=(8, 6))
+plt.plot(df_3["ZN"], f4_result_2_non_ol.resid, "bo", alpha=0.5)
+plt.show() ;
+```
+![f51_zn_resid_dist.jpg](./images/model_8/f51_zn_resid_dist.jpg)
+
+#### AGE 독립변수
+- **AGE와 종속변수에는 비선형 관계가 어느정도 나타나는 것으로 보인다.**
+    - 2차, 3차 비선형 변형 적용을 하면 성능이 개선된다.
+- 잔차와의 분포에서도 비선형 관계로 볼 수 있는 형태가 있는 것 같다.
+
+```python
+feature_trans(df_3, "AGE", 3)
+```
+![f51_age_dist.jpg](./images/model_8/f51_age_dist.jpg)
+
+
+- AGE와 잔차와의 분포
+
+```python
+plt.figure(figsize=(8, 6))
+plt.plot(df_3["AGE"], f4_result_2_non_ol.resid, "bo", alpha=0.5)
+plt.show() ;
+```
+![f51_age_resid_dist.jpg](./images/model_8/f51_age_resid_dist.jpg)
+
+#### B 독립변수
+- **값이 400인 부근데 데이터가 많이 몰려 있어 종속변수와의 분포가 어떤 관계를 띈다고 보기 어렵다.**
+    - 2차와 3차의 비선형 변형을 적용하면 성능이 개선되지만, 두 경우의 성능이 같다. 
+- 잔차와의 분포 형태에서 비선형 또는 선형관계를 찾아보기 어렵다.
+
+```python
+feature_trans(df_3, "B", 3)
+```
+![f51_b_dist.jpg](./images/model_8/f51_b_dist.jpg)
+
+- 잔차와의 분포
+
+```python
+plt.figure(figsize=(8, 6))
+plt.plot(df_3["B"], f4_result_2_non_ol.resid, "bo", alpha=0.5)
+plt.show() ;
+```
+![f51_b_resid_dist.jpg](./images/model_8/f51_b_resid_dist.jpg)
+
+### 8-3. formula_5 만들기
+- formula_5 : scale(I(PTRATIO^2))
+- formula_5_1 : scale(I(PTRATIO^2)) + scale(I(ZN^2))
+- formula_5_2 : scale(I(PTRATIO^2)) + scale(I(ZN^2)) + scale(I(AGE^2))
+- formula_5_3 : scale(I(PTRATIO^2)) + scale(I(ZN^2)) + scale(I(AGE^2)) + scale(I(B^2))
+- formula_5_4 : scale(I(PTRATIO^2)) + scale(I(AGE^2))
+- formula_5_5 : scale(I(PTRATIO^2)) + scale(I(AGE^2)) + scale(I(B^2))
+
+### 8-4. formula 별 성능 비교
+- **이전 모델보다 성능이 큰 차이는 아니지만 개선되었다.**
+- PTRATIO, ZN, AGE, B 변수를 모두 비선형 변형 한 모델의 성능이 가장 좋게 나타난다.
+- 즉 모든 독립변수의 비선형 변형이 적용 된 경우가 성능이 가장 좋다는 의미이다. 비선형 변형으로 다항차수가 늘어나면서 모델의 과최적화 현상이 일어 날 것으로 생각했는데 과최적화가 발생하지 않은 것을 알수 있었다.
+- **모델의 성능이 처음 0.9점대로 진입했다.** 여기에서 더 비선형 변형의 차수를 늘리면 성능값이 더 증가할 것 같지만 독립변수의 비선형 변형은 여기에서 중단하고 다른 방법으로 모델의 성능을 높이는 것을 고려 해 보기로 한다.
+    - VIF, PCA 등의 독립변수 선택 방법 적용
+- **formula_5_3을 적용한 모델의 성능이 가장 높다.**
+
+```python
+T = 6
+
+formula_5_models = [["formula_5_" + str(i) if i !=0 else "formula_5"][0]
+                   for i in range(T)]
+
+formula_5_cols = [["f_5_" + str(i) if i !=0 else "f_5"][0]
+                   for i in range(T)]
+
+model_stats = [0] * T
+for i, f in enumerate(formula_5_models) :
+    eval_f = eval(f)
+    f5_model_2, f5_result_2 = modeling_non_const("MEDV ~ " + eval_f, df_3)
+    train_s, test_s = cross_val_func(5, df_3, "MEDV ~ " + eval_f)
+    calc_stats = (
+        f5_result_2.rsquared,
+        f5_result_2.rsquared_adj,
+        f5_result_2.fvalue,
+        f5_result_2.aic,
+        f5_result_2.bic,
+        train_s[0],
+        test_s[0])
+    model_stats[i] = calc_stats
+
+stats_names = ["r2", "r2_adj", "f_value", "aic", "bic", "train_s", "test_s"]
+formula_5_modeling = pd.DataFrame(model_stats, columns=stats_names)
+formula_5_modeling.index = formula_5_cols
+formula_5_modeling = formula_5_modeling.sort_values("r2", ascending=False).T
+
+formula_5_modeling
+```
+![f51_formulas_test.jpg](./images/model_8/f51_formulas_test.jpg)
+
+### 8-5. formula_5_3로 모델링
+
+#### <OLS report 분석>
+1) 예측 가중치 계수
+    - PTRATIO는 비선형 변형 후에도 pvalue 값이 0으로 예측 가중치값의 의미가 컸다. ZN은 비선형 변형 후에pvlue 값이 크게 증가했는데 예측 가중치값이 0에 가깝다고 볼 수 있다. 오히려 ZN은 비선형 변형을 하지 않는 것이 좋을 수도 있다. AGE는 이전 모델과 거의 같았다. B는 2차형의 pvalue 값이 크게 나타났다. 
+    - 전체 변수들 중에서 RM의 범주형 처리값의 pvalue가 가장 높았다. RM 변수의 예측 가중치값이 가장 0에 가깝다는 의미이다. 또한 NOX의 변수의 pvalue 이전보다 높아졌다. 새로운 비선형 변형의 영향을 받은 것으로 보인다.
+2) 성능 지표
+    - rsquared : 0.901 (개선됨)
+    - r2_adj : 0.893 (개선됨)
+    - f_value : 122.6 (거의 유지)
+    - aic : 2001 (개선됨)
+    - bic : 2140 (개선됨)
+
+```python
+f5_3_trans_X = dmatrix_X_df(formula_5_3, df_3)
+f5_3_model, f5_3_result = modeling_dmatrix(df_3["MEDV"], f5_3_trans_X)
+f5_3_model_2, f5_3_result_2 = modeling_non_const("MEDV ~ " + formula_5_3, df_3)
+
+print(f5_3_result_2.summary())
+```
+![f53_report_1.jpg](./images/model_8/f53_report_1.jpg)
+![f53_report_2.jpg](./images/model_8/f53_report_2.jpg)
+
+### 8-6. 성능 지표 비교
+- **모델의 성능이 처음 0.9를 넘었다.**
+- **F-검정통계 값도 이전 모델보다 많이 작아진 것으로 보아 데이터의 적합도도 높아 진 것으로 보인다.**
+
+```python
+f5_3_stats_df = stats_to_df(f4_non_ol_stats_df, "f5_3_result_2")
+f5_3_stats_df
+```
+![f53_stats_df.jpg](./images/model_8/f53_stats_df.jpg)
+
+### 8-7. 교차 검증
+- **교차검증 : 과최적화 현상은 없다.**
+    - 그러나 훈련 모델의 성능과 검증 모델의 성능의 차이가 이전에 비해서 약간 늘어난 것으로 보인다. 비선형 변형 등으로 다항회귀 모형의 차수가 높아지면서 생기는 현상으로 볼 수 있다.
+    - test score : 0.90358
+    - train score : 0.87728
+
+```python
+train_s, test_s = cross_val_func(5, df_3, "MEDV ~" + formula_5_3)
+train_s, test_s
+```
+![f53_cross_val.jpg](./images/model_8/f53_cross_val.jpg)
+
+
+### 8-8. 잔차의 정규성 검정 : 자크베라 검정
+- **이전 모델의 pvalue에 비해 다소 작아졌다. 비선형 변형으로 잔차들에 영향을 미친 것으로 보인다.**
+    - pvalue   : 0.0  -> 0.11 -> 0.03
+    - skew      : 1.52 -> 0.78 -> 0.39 -> 0.36 -> 0.44 -> 0.23 -> 0.29
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53 -> 4.00 -> 3.20 -> 3.26
+
+```python
+models = list(f5_3_stats_df.columns)
+models[0] = "f_result_2"
+resid_jbtest_df(models)
+```
+![f53_jb_test.jpg](./images/model_8/f53_jb_test.jpg)
+
+### 8-11. 잔차의 정규성 검정 : QQ플롯
+- **이전 모델의 QQ 플롯의 형태와 큰 변화는 없다.** 
+    - 오른쪽 상단의 중심분포에서 떨어진 잔차들의 간격이 더 벌어졌다. 비선형 변형을 추가해서 잔차가 큰 것들이 생긴것으로 보인다.
+
+```python
+plt.figure(figsize=(10, 6))
+plt.subplot(121)
+sp.stats.probplot(f4_result_2_non_ol.resid, plot=plt)
+
+plt.subplot(122)
+sp.stats.probplot(f5_3_result_2.resid, plot=plt)
+
+plt.tight_layout()
+plt.show() ;
+```
+![f53_qq.jpg](./images/model_8/f53_qq.jpg)
+
+### 8-12. 잔차와 아웃라이어 측정
+- 모델이 완전하지 않기 때문에 아웃라이어는 모델링을 할 때마다 발생하는데 아웃라이어를 계속 제거하면 데이터 자체의 왜곡이 발생할 수 있다.
+- 모델의 성능이 0.9를 넘었으므로 현재 모델에서 마지막으로 아웃라이어를 제거한 후 더이상 아웃라이어를 제거하여 성능을 높이는 방식은 중단하도록 한다.
+
+#### 표준화 잔차와 아웃라이어 분포
+- **17개의 아웃라이어가 발생하는 것을 볼 수 있다.**
+
+```python
+plt.figure(figsize=(8, 6))
+plt.stem(f5_3_result_2.resid_pearson)
+plt.axhline(3, c="g", ls="--")
+plt.axhline(-3, c="g", ls="--")
+plt.show() ;
+```
+![f51_resid_dist.jpg](./images/model_8/f51_resid_dist.jpg)
+
+- 아웃라이어 측정
+
+```python
+ol_idx_3, non_ol_idx_3, non_ol_df_3 = calc_outlier_2(f5_3_result_2, df_3.iloc[:, :13], df_3["MEDV"])
+
+len(ol_idx_3)
+
+>>> print
+
+17
+```
+- 데이터와 아웃라이어 분포
+
+```python
+from statsmodels.graphics import utils
+
+pred = f5_3_result_2.predict(df_3)
+
+plt.figure(figsize=(10, 8))
+ax = plt.subplot()
+plt.scatter(df_3["MEDV"], pred)
+plt.scatter(df_3.MEDV[ol_idx_3], pred[ol_idx_3], s=200, c="r", alpha=0.5)
+utils.annotate_axes(range(len(ol_idx_3)), ol_idx_3,
+                    list(zip(df_3.MEDV[ol_idx_3], pred[ol_idx_3])),
+                    [(-15, 15)] * len(ol_idx_3), size="small", ax=ax)
+
+plt.title("formula_5_3 모델의 아웃라이어", y=1.05, fontsize=15)
+plt.show() ;
+```
+![f51_ol_dist.jpg](./images/model_8/f51_ol_dist.jpg)
+
+### 8-13. 1차, 2차 아웃라이어 일부 복구 결과
+- **모델의 성능을 높이기 위해 1차, 2차 아웃라이어 중에서 일부를 복원해 보기로 하였다.**
+    - 3차 아웃라이어를 제거하기 전에 1, 2차 아웃라이어는 어떤 데이터 였는지 확인
+    - 1차 아웃라이어 제거에서 MEDV=50인 데이터도 함께 제거하였다. MEDV=50인 데이터는 16개가 몰려 있었다.
+    - 1, 2차 아웃라이어 중에는 AGE=100, TAX=660, 403인 데이터가 많았다. 특히 제거되지 않는 같은 조건의 데이터 중에서 38%가 아웃라이어로 제거 됐다는 것을 알 수 있었다.
+    - MEDV=50 인 데이터 중에서 AGE=100, TAX=660, 403인 데이터를 제외하고 남은 데이터 일부를 복원하였을때 모델의 성능이 어떻게 바뀌는지 확인 하였다.
+    - 복원가능한 데이터가 총 7개 있었고 이중 5개를 샘플링하여 복원한 후 모델의 성능을 측정하니 성능이 향상되는 것을 볼 수 있었다. (0.901 -> 0.915)
+    - 그러나 이 7개 중에서 교차검증 에러를 발생시키는 데이터가 있었고, **이것을 제외한 5개의 데이터를 복원하였으나, 새로운 모델링의 아웃라이어 측정에서 다시 아웃라이어로 분류되었다. 즉 MEDV=50 인 데이터는 어떤 조건에 상관없이 아웃라이어로 측정된다는 것을 알 수 있었다.**
+- **1, 2 차 아웃라이어에서 복원할 데이터의 조건을 추가로 발견하기 어려워 아웃라이어 복원을 중단하였다.**
+    - 3차 아웃라이어 제거를 반영하는 것으로 끝냈다.
+
+#### 1차, 2차 아웃라이어 데이터 병합
+
+```python
+## 아웃라이어 1차는 fox와 MEDV=50인 데이터가 겹침
+ol_1 = df.loc[np.unique(ol_1.index)]
+ol_1["thr"] = 1.0
+ol_2 = df_2.loc[np.unique(ol_idx_2)]
+ol_2["thr"] = 2.0
+
+ol_df = pd.concat([ol_1, ol_2], axis=0)
+ol_df
+```
+#### 아웃라이어 1, 2차 중에서 AGE=100, TAX=666인 데이터의 비중
+- 전체 아웃라이어 중에서 AGE=100이고 TAX=666인 데이터가 17% 가까이 된다.
+
+```python
+(ol_df[(ol_df["AGE"]==100.0) & (ol_df["TAX"]==666.0)].shape[0] / ol_df.shape[0]) * 100
+
+>>> print
+
+16.666666666666664
+```
+
+#### AGE=100, TAX=666 인 데이터 중에서 아웃라이어로 제거 된 데이터의 비중
+- AGE=100 이고 TAX=666 인 모든 데이터에서 같은 조건의 아웃라이어가 차지하는 비중이 38% 가까이 된다.
+    - **즉 이러한 조건의 데이터가 아웃라이어로 분류될 가능성이 높다는 의미로 해석할 수 있다.**
+
+```python
+(ol_df[(ol_df["AGE"]==100.0) & (ol_df["TAX"]==666.0)].shape[0] / df[(df["AGE"]==100.0) & (df["TAX"]==666.0)].shape[0]) * 100
+
+>>> print
+
+37.93103448275862
+```
+#### 아웃라이어 중 MEDV=50 인 데이터 일부 복구 후 성능 측정
+- 아웃라이어 1차에서 제거한 데이터 중에서 MEDV=50인 데이터가 포함 되어 있다.
+    - MEDV=50 인 데이터에 16개의 데이터가 몰려 있기때문
+- 또한 아웃라이어 1, 2차 중 AGE=100, TAX=666, 403이 데이터가 많이 포함되어 있었다.
+- **이러한 점을 반영하여 MEDV=50 인 데이터 중에서 AGE=100, TAX=666,403 제외한 것 중에서 5개를 랜덤으로 선택하여 복구를 해본다.**
+    - 이 조건의 아웃라이어 중에서 모델의 교차검증에서 에러를 일으키는 데이터를 제외함
+- **아웃라이어 일부를 복구하면 성능이 높아진다.**
+
+```python
+## 복구할 아웃라이어를 df_3 데이터 프레임에 병합
+ol_re_gen = df.loc[[195, 186, 283, 225, 257]]
+df_3_re_gen = pd.concat([df_3, ol_re_gen], axis=0)
+
+## 아웃라이어를 복구한 데이터 프레임으로 모델링 후 성능지표 확인
+f5_3_model_2_re_ol, f5_3_result_2_re_ol = modeling_non_const("MEDV ~ " + formula_5_3, df_3_re_gen)
+f5_3_re_ol_stats_df = stats_to_df(f5_3_stats_df, "f5_3_result_2_re_ol")
+f5_3_re_ol_stats_df
+```
+![f51_regen_ol_stats.jpg](./images/model_8/f51_regen_ol_stats.jpg)
+
+#### MEDV=50 값 복원 모델에서 다시 3차 아웃라이어 측정
+- **복원한 MEDV=50 데이터가 다시 아웃라이어로 측정된다는 것을 알 수 있었다.**
+
+```python
+ol_idx_4, non_ol_idx_4, non_ol_df_4 = calc_outlier_2(f5_3_result_2_re_ol, df_3_re_gen.iloc[:, :13], df_3_re_gen["MEDV"])
+```
+
+- 복구한 아웃라이어와 3차 아웃라이어가 겹치는지 확인
+    - 복구한 아웃라이어가 다시 아웃라이어로 선택 된다.
+
+```python
+set(ol_idx_4).intersection(set(ol_re_gen.index))
+
+>>> print
+
+{186, 195, 225, 257, 283}
+```
+
+## <모델링 8의 분석>
+1) **비선형 변형을 적용하지 않았던 PTRATIO, ZN, AGE, B 변수의 비선형 변형을 적용하여 모델의 성능이 개선되었다.** 모든 독립변수의 비선형 변형은 3차이상을 적용하지 않았다. 다항회귀 모형의 차수가 증가할 수록 모델이 과최적화 될 수 있으므로 2차 변형까지만 적용하였다.
+2) **추가 비선형 변형으로 모든 독립변수에 비선형 변형이 적용되었고, 과최적화가 발생할 것으로 생각했으나과최적화는 발생하지 않았다.** 다만 훈련 데이터 모델의 성능과 검증 데이터 모델의 성능의 간격이 이전 모델에서보다 다소 커진 것을 확인 할 수 있었다.
+3) **formula_5의 모델링 결과는 처음으로 0.9점대로 진입했다.** 잔차의 정규성은 비선형 변형으로 추가된 아웃라이어가 발생하여 다소 감소하였다.
+4) 모델링을 할때마다 아웃라이어가 나타나는 이유는 모델이 데이터에 완전히 적합하지 않기때문이다. 아웃라이어를 제거하면 모델의 성능은 높아지겠지만 데이터 자체가 심하게 왜곡될 수 있으므로 formula_5 모델에서 3차 아웃라이어를 측정 후 제가하는 것에서 끝내기로 한다.
+5) **1, 2차 아웃라이어 중에서 MEDV=50 인 데이터 일부를 복원하였을때 성능변화를 확인해 보았다.** MEDV=50 인 아웃라이어 중 전체 아웃라이어에서 많이 보이는 AGE=100, TAX=660, 403 데이터를 제외한 7개의 데이터를 복원하여 모델링을 하니 성능이 증가 했다.
+6) **그러나 이 모델의 아웃라이어를 측정했을때 복원한 아웃라이어가 그대로 포함되는 것을 확인 할 수 있었다.** 즉 MEDV=50 인 데이터는 어떤 조건을 적용하여도 아웃라이어로 측정된다는 것을 의미한다. 폭스 아웃라이어 추전값이라는 기준을 유지하기 위해 1, 2차 아웃라이어의 복원은 더 이상 진행하지 않았고, 3차아웃라이러를 제거 후 모델링을 진행 하였다
+7) 아웃라이어 제거후, VIF와 corr 값을 비교하여 변수선택 모델을 테스트 한다.
 
 
 
