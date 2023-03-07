@@ -2084,8 +2084,8 @@ plt.show() ;
 #### <OLS report 분석>
 1) **예측 가중치 계수**
 - 비선형 변형을 적용한 독립변수의 예측 가중치들의 pvalue 값이 전반적으로 낮아졌다. 
-    - 그러나 INDUS, ZN, CRIM 비선형 변수일부와 RAD 2와 6, RM 7, 5 클래스 변수 일부는 pvalue가 높아졌다. 
-    - 즉 이 독립변수들은 가중치 계수가 0에 가깝다는 것을 의미한다. 
+- 그러나 INDUS, ZN, CRIM 비선형 변수일부와 RAD 2와 6, RM 7, 5 클래스 변수 일부는 pvalue가 높아졌다. 
+- 즉 이 독립변수들은 가중치 계수가 0에 가깝다는 것을 의미한다. 
 2) **성능 지표**
 - rsquared : 0.897 (개선됨)
 - r2_adj : 0.889 (개선됨)
@@ -2102,7 +2102,7 @@ print(f4_result_2_non_ol.summary())
 ![f42_report_1.jpg](./images/model_7/f42_report_1.jpg)
 ![f42_report_2.jpg](./images/model_7/f42_report_2.jpg)
 
-### 7-3. 성능 지표 비표
+### 7-3. 성능 지표 비교
 
 ```python
 f4_non_ol_stats_df = stats_to_df(f4_6_stats_df, "f4_result_2_non_ol")
@@ -2197,7 +2197,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-![f42_corr_matrix.jpg](./images/model_7/f42_corr_matrix.jpg)
+![f42_corr_matrix.png](./images/model_7/f42_corr_matrix.png)
 
 ## <모델링 7의 분석>
 1) f4 모델의 잔차 분포를 분석한 결과 아웃라이어가 발생한다는 것을 확인 한 후 폭스추천값을 사용하여 아웃라이어를 제거 하였다.
