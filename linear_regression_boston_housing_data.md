@@ -1,6 +1,6 @@
 # 프로젝트 : 선형회귀 분석을 사용한 Boston Housing Data 집값 예측
 
-<p align=center> <img src = "./images/boston_city.jpg" width="70%"/> </p>
+<p align=center> <img src = "./images/boston_city.jpg" height="85%"/> </p>
 
 ## 1. 분석 개요
 
