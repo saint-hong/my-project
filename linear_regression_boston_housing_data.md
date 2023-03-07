@@ -513,10 +513,13 @@ plt.show()
     - 사용한 데이터 : df_4
 
 ## 1. 모델링 1 : m_f1
-- **formula** : 독립변수 데이터와 종속변수 데이터의 변형 없이 적용
+
+#### 요약
+- formula : 독립변수 그대로 사용
 ```
 CRIM + ZN + INDUS + CHAS + NOX + RM + AGE + DIS + RAD + TAX + PTRATIO + B + LSTAT
 ```
+- 사용한 데이터 : df
 
 ### 1-1. formula 정의
 
@@ -649,16 +652,21 @@ plt.show() ;
     - $y = 36.45949 const - 0.10801 CRIM + 0.04642 ZN + 0.02056 INDUS + 2.68673 CHAS - 17.76661 NOX + 3.80987 RM + 0.00069 AGE - 1.47557 DIS + 0.30605 RAD - 0.01233 TAX - 0.95275 PTRATIO + 0.00931 B - 0.52476 LSTAT$
 
 ## 2. 모델링 2 : m_f2
-- **formula_1**
+
+#### 요약
+- formula_1 : 스케일링 + C(CHAS)
 ```
 'scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(DIS) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT)' 
 ```
+- 독립변수의 변형 적용 : CHAS
+- 사용한 데이터 : df
 
+#### 독립변수의 비선형 변형 요약
 - **모델링 1의 OLS report에서 발생한 조건수 에러를 해결하기 위해 독립변수에 스케일링을 적용한다.**
     - 평균을 0, 표준편차를 1으로 조정한다.
 - **독립변수 중 CHAS는 범주형 데이터이므로 스케일링이 아닌 범주형 처리를 적용한다.**
 
-#### 범주형 독립변수의 범주형 처리(더미 변수화)
+#### 범주형 독립변수의 범주형 처리방법 (더미 변수화)
 - `범주형 데이터를 더미변수화 하는 2가지 방법`
 - 풀랭크 : 상수값 가중치를 가지지 않는 모형
     - **formula 식에 0 추가, C(CHAS) 추가**
@@ -869,6 +877,17 @@ plt.show() ;
 
 
 ## 3. 모델링 3 : m_f3
+
+#### 요약
+- formula_2 : 스케일링 + C(CHAS) + scale(np.log(DIS)) + scale(I(LSTAT^2))
+
+```
+scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(np.log(DIS)) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT) + scale(I(LSTAT**2))
+```
+- 독립변수의 변형 적용 : CHAS, DIS, LSTAT
+- 사용한 데이터 : df
+
+#### 독립변수 비선형 변형 요약
 - **formula 변형을 위한 독립변수 비선형 변형**
      - 스케일링 + C(CHAS) 외에 다른 독립변수의 분포와 비선형성을 파악한 후 비선형 변형을 적용하여 성능을 개선
 - **LSTAT의 비선형 변형**
@@ -880,11 +899,6 @@ plt.show() ;
     - 또한 DIS 독립변수의 분포도를 통해서 로그 정규분포 형태에 가깝다는 것을 알 수 있다.
     - 이러한 특징을 반영하여 로그 변환을 적용하면 모델의 성능이 조금 높아지는 것을 확인 할 수 있다. (0.061->0.085)
     - 로그 변형 적용
-- **formula_2**
-
-```
-scale(CRIM) + scale(ZN) + scale(INDUS) + C(CHAS) + scale(NOX) + scale(RM) + scale(AGE) + scale(np.log(DIS)) + scale(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT) + scale(I(LSTAT**2))
-```
 
 ### 3-1. 독립변수의 비선형 변형
 
@@ -1069,48 +1083,178 @@ plt.show() ;
 ![f2_heatmap.jpg](./images/model_3/f2_heatmap.jpg)
 
 ## <모델링 3의 분석>
-1) 독립변수 중 LSTAT와 DIS의 분포를 확인하니 비선형 관계가 비교적 뚜렷하게 나타났다. 이러한 비선형 관계는 모델에 적합하지 않으므로 2차형 변형을 사용하여 비선형 관계를 조절하였다. 이로인해 모델의 성능값이 조금 개선되었고, 특히 잔차의 선형성이 개선되었다.
+1) 독립변수 중 LSTAT와 DIS의 분포를 확인하니 비선형 관계가 비교적 뚜렷하게 나타났다. 이러한 비선형 관계는 모델에 적합하지 않으므로 2차형 변형을 사용하여 비선형 관계를 조절하였다. **이로인해 모델의 성능값이 조금 개선되었고, 특히 잔차의 선형성이 개선되었다.**
 2) 또한 DIS와 LSTAT와 강한 상관관계를 갖고 있었던 AGE의 pvalue 값이 크게 낮아졌다. DIS와 LSTAT의 비선형 변형의 영향을 받은 것으로 보인다.
 3) **잔차의 QQ플롯으로 확인 해 보면 여전히 중심 분포에서 떨어진 잔차들이 나타나는데, 아웃라이어의 영향으로 보인다.** 따라서 현재 formula_2를 사용한 모델에서 쿡스 디스턴스 값을 계산하고, 폭스 추천값 기준으로 아웃라이어를 결정하고 데이터에서 제거한 후 다시 모델링 결과를 파악하고자 한다.
 
+## 4. 모델링 4 : m_f4
+
+#### 요약
+- formula_2 + 1차 아웃라이어 제거
+- 49개의 폭스 추천 아웃라이어와 종속변수의 값이 50인 데이터 제거
+- 사용한 데이터 : df_2
+
+### 4-1. 아웃라이어 측정
+- `Cooks-Distance`
+    - formula_2를 적용한 모델에서 아웃라이어를 계산하여 데이터에서 제거 후 다시 모델링을 하였다.
+    - 모델의 result 객체에는 영향도 객체가 저장되어 있는데, 이 영향도 객체를 사용하여 쿡스 디스턴스를 계산할 수 있다. 
+    - 쿡스 디스턴스는 레버리지와 잔차의 값으로 계산하는데 레버리자와 잔차의 크기가 클 수록 아웃라이어로 판단 할 수 있다.
+- `FOX-Recommendation`
+    - 쿡스 디스턴스의 값들 중에서 폭스 추천값 기준보다 큰 것을 아웃라이어로 판단할 수 있다.
+    - 폭스 추천 아웃라이어와 종속변수의 값이 50인 데이터를 함께 기존 데이터에서 제거한 후 formula_2를 적용하여 다시 모델링을 한다.
+- `종속변수 MEDV=50`
+    - 종속변수 MEDV의 최대값인 50인 데이터의 갯수는 29개로 몰려있는 것을 알 수 있다.
+    - MEDV=50인 데이터는 분석에 불필요한 데이터로 볼 수 있다.
 
 
+#### 아웃라이어 계산
+- **1차 아웃라이어**
+    - 아웃라이어 갯수 : 49개(중복데이터 포함)
+    - 아웃라이어 제거 후 데이터 갯수 : 470개
+    - 아웃라이어 제거 후 데티터 프레임 : (470, 14)
+
+```python
+ol_idx, non_ol_idx, non_ol_df = calc_outlier(f2_result_2, dfX, dfy)
+
+len(ol_idx), len(non_ol_idx), non_ol_df.shape
+
+>>> print
+
+(49, 470, (470, 14))
+```
+
+- 데이터와 아웃라이어 그래프
+
+```python
+from statsmodels.graphics import utils
+
+pred = f2_result.predict(f2_trans_X)
+
+plt.figure(figsize=(10, 8))
+ax = plt.subplot()
+plt.scatter(dfy, pred)
+plt.scatter(dfy.MEDV[ol_idx], pred[ol_idx], s=200, c="r", alpha=0.5)
+utils.annotate_axes(range(len(ol_idx)), ol_idx,
+                    list(zip(dfy.MEDV[ol_idx], pred[ol_idx])),
+                    [(-20, 15)] * len(ol_idx), size="small", ax=ax)
+
+plt.title("formula_2 모델의 아웃라이어", y=1.05, fontsize=15)
+plt.show() ;
+```
+![f2_outlier.jpg](./images/model_4/f2_outlier.jpg)
+
+### 4-1. 아웃라이어(1차) 제거 후 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+    - INDUS와 AGE의 pvaule 값이 바뀌었다.
+    - INDUS : 0.738 -> 0.864 ->0.995
+    - AGE : 0.938 -> 0.212 -> 0.888
+    - 아웃라이어 제거 후 AGE의 pvalue는 다시 크게 늘어났다. AGE 변수는 INDUS와 마찬가지로 현재 모형에서 종속변수에 영향을 미치지 않는다고 보는 것이 맞을 것 같다.
+    - 또한 ZN의 pvalue도 증가한 것을 알 수 있다.
+2) **성능지표 : 성능이 크게 개선 되었다.**
+    - rsquared : 0.8421
+    - r2_adj : 0.8372
+    - f_value : 173.35
+    - aic : 2385
+    - bic : 2448
+- 다른 성능 지표는 크게 개선 되었으나, f_value 는 다소 높아 진것으로 보아 전체 독립변수의 가중치가 종속변수에 미치는 영향이 떨어진 것으로 보인다. 즉 모델 자체의 유의미한 측면이 감소한 것이라고 생각해 볼 수 있다.
+
+```python
+trans_X_non_ol = dmatrix_X_df(formula_2, df, outlier_idx=list(ol_idx))
+f2_model_non_ol, f2_reuslt_non_ol = modeling_dmatrix(dfy.iloc[non_ol_idx],
+                                                     trans_X_non_ol)
+
+print(f2_reuslt_non_ol.summary())
+```
+![f2_non_ol_report.jpg](./images/model_4/f2_non_ol_report)
 
 
+### 4-2. 교차 검증
+- **교차검증 : 과최적화 없음**
+    - test score : 0.8433
+    - train score : 0.8258
+
+#### KFold를 사용한 교차검증
+
+```python
+train_s, test_s = cross_val_func(6, non_ol_df, "MEDV ~" + formula_2)
+train_s, test_s
+```
+![f2_non_ol_cv_score.jpg](./images/model_4/f2_non_ol_cv_score.jpg)
 
 
+### 4-3. 성능 지표
+- **모델링 1, 2, 3 보다 성능이 크게 개선되었다.**
+
+```python
+f2_stats_df_non_ol = stats_to_df(f2_stats_df, "f2_result_2_non_ol")
+f2_stats_df_non_ol
+```
+![f2_non_ol_stats_df.jpg](./images/model_4/f2_non_ol_stats_df.jpg)
+
+### 4-4. 잔차의 정규성 검정 : 자크베라 검정
+- **잔차의 정규성이 크게 개선되었다. 특히 skew 값이 0에 가까워진 것을 볼 수 있다.**
+    - pvalue   : 0.0 
+    - skew      : 1.52 -> 0.78 -> 0.39
+    - kurtosis : 8.28 -> 6.59 -> 3.55
+- **현재 모델이 데이터와 적합도가 커졌다고 볼 수 있다.**
+
+![f2_non_ol_jb_test.jpg](./images/model_4/f2_non_ol_jb_test.jpg)
 
 
+### 4-5. 잔차의 정규성 검정 : QQ 플롯
+-  **아웃라이어 제거 후 잔차의 선형성이 더 두드러 졌다.**
+    - 또한 중심 분포에서 크게 떨어져 있었던 잔차 샘플이 중심 분포 쪽으로 더 가까워 졌다. 잔차 분포의 오른쪽 위가 더 휘어지는 현상이 보이는 것은 F-value 값이 높아진 것과 연관성이 있는 것으로 보인다.
+
+```python
+plt.figure(figsize=(10, 6))
+plt.subplot(121)
+sp.stats.probplot(f2_result_2.resid, plot=plt)
+plt.title("f2 아웃라이어 제거 전")
+
+plt.subplot(122)
+sp.stats.probplot(f2_result_2_non_ol.resid, plot=plt)
+plt.title("f2 아웃라이어 제거 후")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f2_non_ol_qq.jpg](./images/model_4/f2_non_ol_qq.jpg)
 
 
+### 4-6. VIF, Correlation, ANOVA
+- vif : LSTAT, TAX, RAD, DIS, NOX의 의존성이 높은 것으로 보인다.
+- corr : LSTAT, AGE, DIS, INDUS, NOX, TAX의 상관관계가 높은 것으로 보인다.
+    - LSTAT의 상관관계 값이 커짐
+- anova : AGE, INDUS, ZN, CHAS의 중요도가 낮은것으로 보인다.
+    - B의 중요도가 높아지고, CHAS의 중요도가다소 낮아짐
+- **모델링을 할 때마다 VIF, Correlation, ANOVA 값은 변한다. 그러므로 이 값들은 최종 모델에서 변수선택을 위해 사용하는 것이 적합하다.**
 
 
+#### vca 지표
 
+```python
+corr_matrix, vca_df = vif_corr_anova_df(trans_X_non_ol, f2_result_2_non_ol, 0.6)
+vca_df
+```
+![f2_non_ol_vca_df.jpg](./images/model_4/f2_non_ol_vca_df.jpg)
 
+#### 상관관계 히트맵
+- **아웃라이어 제거 전과 크게 달라지지 않았다.**
+- NOX와 INDUS, RAD와 TAX, LSTAT와 LSTAT^2 는 서로 각각 상관관계가 높은 패턴을 보인다.
 
+```python
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn")
+plt.show() ;
+```
+![f2_non_ol_heatmap.jpg](./images/model_4/f2_non_ol_heatmap.jpg)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## <모델링 4의 분석>
+1) **아웃라이어를 제거한 이후 모델의 성능은 크게 개선 되었다.** 아웃라이어 샘플 하나에 의해모델의 성능이 바뀔 수 있으므로, 아웃라이어의 기준을 폭스 추천값을 사용하였다. 모델의 R2, AIC, BIC 등 값은 개선되었지만 F-value 값은 더 높아지는 것을 확인 할 수 있는데 기존 데이터의 삭제로 인한 모델의 의미가 떨어진 것으로 보인다.
+2) **또한 아웃라이어 제거로 잔차의 정규성도 개선 되었다.** 자크베라 검정의 skew와 kurtosis 값이 0에 더 가까워 졌고, QQ 플롯에서 잔차의 분포도 선형성에 더 가까워 졌다. 다만 QQ플롯에서 잔차 분포의 양쪽 끝부분이 휘어지는 현상이 나타났는데 F-value 값이 더 커진 것과 연관성이 있어 보인다.
+3) 모델 자체의 성능이 개선 되었으므로 독립변수의 비선형 변형을 더 진행하는 것이 좋을 것 같다.
 
 
 
