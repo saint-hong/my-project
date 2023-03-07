@@ -1257,6 +1257,306 @@ plt.show() ;
 3) 모델 자체의 성능이 개선 되었으므로 독립변수의 비선형 변형을 더 진행하는 것이 좋을 것 같다.
 
 
+## 5. 모델링 5 : m_f5
+
+#### 요약 
+- formula_3_2 : formula_2 + scale(I(INDUS^2)) + scale(I(NOX^2)) + C(RAD)
+```
+scale(CRIM) + scale(ZN) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + scale(RM) + scale(AGE) + scale(np.log(DIS)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(B) + scale(LSTAT) + scale(I(LSTAT**2))
+```
+
+- 독립변수의 변형 적용 : 상관성이 높은 INDUS, NOX, RAD, TAX
+- 사용한 데이터 : df_2 (1차 아웃라이어 제거 데이터)
+
+#### 독립변수의 비선형 변형 요약
+1) **상관관계가 높은 독립변수**
+    - 다른 독립변수와 상관관계값이 큰 변수 INDUS, NOX, RAD, TAX 4개를 선정하고 이 변수들을 비선형 변형한다.
+2) **독립변수의 분포 분석**
+- 이 4개의 독립변수의 분포와 누적분포를 확인하여 비선형 관계의 특징을 찾고 이것을 조절할 수 있는 비선형 변형을 적용하여 모델의 성능을 확인 한다.
+    - INDUS : 다봉 분포의 누적 분포, 작지만 종속변수와 2차형 비선형 관계가 보임
+    - NOX : 로그 정규분포의 누적 분포, 작지만 종속변수와 2차형 비선형 관계가 보임
+    - RAD : 정수값으로 이루어진 범주형 데이터의 분포
+    - TAX : 다봉 분포의 누적 분포, 종속변수와 비선형 관계이지만 특별한 특징이 보이지 않음
+    - INDUS, RAD, TAX 독립변수의 공통적인 특징은 특정한 값에 119개가 동일하게 몰려 있다는 것을 알 수 있었다. 전체 데이터의 25%가 특정한 값에 쏠려 있는 형태이다.
+- 이러한 특징이 모델에 영향을 미쳤을 가능성이 있다.
+3) **비선형 변형 적용 결과**
+    - INDUS : 2차형 변형
+    - NOX : 2차형 또는 log 변형
+    - RAD : 범주형 처리
+    - TAX : 변형 불필요
+
+### 5-1. 비선형 변형 적용 독립변수의 분포
+
+```python
+cols = ["INDUS", "NOX", "RAD", "TAX"]
+N = 2
+M = 2
+
+plt.figure(figsize=(10, 8))
+for i, col in enumerate(cols) :
+    plt.subplot(N, M, i+1)
+    sns.distplot(df_2[col], rug=False, kde=True, color="k")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f3_trans_dist.jpg](./images/f3_trans_dist.jpg)
+
+### 5-2. 독립변수의 비선형 변형과 성능값 비교
+
+#### INDUS
+- **2차형 변형으로 성능이 크게 개선되지는 않는다.**
+    - 18.10 값에 119개의 데이터 샘플이 몰려 있다.
+
+```python
+crim_df_iniv, crim_df_cumula = feature_trans(df_2, "INDUS", 3)
+```
+![f3_trans_indus.jpg](./images/model_5/f3_trans_indus.jpg)
+
+#### NOX
+- NOX 변수의 2차, 3차 비선형 변형 적용
+    - **성능이 크게 개선되지는 않는다.**
+
+```python
+crim_df_iniv, crim_df_cumula = feature_trans(df_2, "NOX", 3)
+```
+![f3_trans_nox_1.jpg](./images/model_5/f3_trans_nox_1.jpg)
+
+- NOX 변수의 로그형 변형
+    - **2, 3차 변형보다 성능이 더 높다.**
+
+```python
+plot_pred("NOX + np.log(NOX)", "NOX")
+```
+![f3_trans_nox_2.jpg](./images/model_4/f3_trans_nox_2.jpg)
+
+
+#### RAD
+- **범주형 처리를 적용해보면 좋을 것 같다.**
+    - 1~24 사이의 정수값으로 이루어져 있다.
+    - 24 값에 데이터 샘플이 몰려 있다.
+- RAD의 유니크 값 확인
+
+```python
+df_2["RAD"].unique()
+
+>>> print
+
+array([ 1.,  2.,  3.,  5.,  4.,  8.,  6.,  7., 24.])
+```
+
+- 기본 독립변수의 예측값
+
+```python
+plot_pred("RAD", "RAD")
+```
+![f3_trans_rad.jpg](./images/model_5/f3_trans_rad.jpg)
+
+- 범주형 처리를 적용한 후의 분포와 예측값
+
+```python
+plot_pred("C(RAD)", "RAD")
+```
+![f3_trans_rad_2.jpg](./images/model_5/f3_trans_rad_2.jpg)
+
+#### TAX
+- **TAX와 종속변수간에 뚜렷한 비선형, 선형 관계를 찾기 어렵다.**
+    - 2차 비선형 변형을 적용해도 성능이 개선되지 않는다.
+    - TAX는 기본형을 사용한다.
+- 기본 TAX의 분포    
+
+```python
+plot_pred("TAX", "TAX")
+```
+![f3_trans_tax_1.jpg](./images/model_5/f3_trans_tax_1.jpg)
+
+- 2차 변형을 적용한 TAX의 분포
+
+```python
+plot_pred("TAX + I(TAX**2)", "TAX")
+```
+![f3_trans_tax_2.jpg](./images/model_5/f3_trans_tax_2.jpg)
+
+#### INUDS, RAD, TAX는 특정값에 데이터 샘플이 119개 몰려 있다.
+- **이러한 영향때문에 독립변수의 상관관계가 높고, 중요도가 낮은 것 같다.**
+    - 전체데이터의 약 25%가 하나의 값에 몰려 있는 것으로 보여진다.
+
+```python
+vc_indus = df_2["INDUS"].value_counts().reset_index()[:10]
+vc_nox = df_2["NOX"].value_counts().reset_index()[:10]
+vc_rad = df_2["RAD"].value_counts().reset_index()[:10]
+vc_tax = df_2["TAX"].value_counts().reset_index()[:10]
+
+vc_indus_nox_rad_tax = pd.concat([vc_indus, vc_nox, vc_rad, vc_tax], axis=1)
+vc_indus_nox_rad_tax
+```
+![f3_value_counts.jpg](./images/model_5/f3_value_counts.jpg)
+
+### 5-3. formula_3 만들기
+- **독립변수의 비선형 변형을 여러가지로 조합하여 formula를 만들고 가장 성능이 좋은 것을 선택한다.**
+    - INDUS : 2차형
+    - NOX : 2차형, log
+    - RAD : 범주형 처리
+    - TAX : 기본형 scale()
+
+#### formula 정의
+- formula_3 : scale(I(INDSU^2))
+- formula_3_1 : scale(I(INDSU^2)) + scale(I(NOX^2))
+- formula_3_2 : scale(I(INDSU^2)) + scale(I(NOX^2)) + C(RAD)
+- formula_3_3 : scale(I(INDSU^2)) + scale(np.log(NOX) + C(RAD)
+- formula_3_4 : scale(I(INDSU^2)) + C(RAD)
+- formula_3_5 : C(RAD) 
+
+### 5-5. formula 별 성능 비교
+- **formula2 보다 전체적으로 성능이 향상 되었다.**
+    - 또한 fvalue, aic, bic 도 개선되었다.
+    - 변수가 많아질 수록 모델이 불안정 해질거 같았지만 아직까지는 크게 문제 없는 것으로 보인다.
+    - 교차검증 결과 과최적화도 없는 것으로 보인다.
+- **모델의 성능이 가장 좋은 formula_3_2 를 사용하여 모델링을 하는 것으로 정하였다.**
+
+```python
+## formula_3의 버전을 모델링하고 교차검증한 후 성능지표를 반환하는 코드
+
+formula_3_trans = [["formula_3_" + str(i) if i !=0 else "formula_3"][0]
+                   for i in range(6)]
+
+model_stats = [0] * 6
+for i, f in enumerate(formula_3_trans) :
+    eval_f = eval(f)
+    f3_model_2, f3_result_2 = modeling_non_const("MEDV ~ " + eval_f, df_2)
+    train_s, test_s = cross_val_func(6, df_2, "MEDV ~" + eval_f)
+    calc_stats = (
+        f3_result_2.rsquared,
+        f3_result_2.rsquared_adj,
+        f3_result_2.fvalue,
+        f3_result_2.aic,
+        f3_result_2.bic,
+        train_s[0],
+        test_s[0])
+    model_stats[i] = calc_stats
+
+## 데이터 프레임 변환
+stats_names = ["r2", "r2_adj", "f_value", "aic", "bic", "train_s", "test_s"]
+formula_3_modeling = pd.DataFrame(model_stats, columns=stats_names)
+formula_3_modeling.index = formula_3_trans
+formula_3_modeling = formula_3_modeling.sort_values("r2", ascending=False).T
+                                
+formula_3_modeling    
+```
+![f3_trans_score.jpg](./images/model_5/f3_trans_score.jpg)
+
+### 5-6. formula_3_2로 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+    - 전체적으로 예측 가중치의 pvalue 가 낮아졌다. 즉 독립변수들의 종속변수에 대한 영향이 이전 모델에 비해 고르게 분포된 것으로 보인다.
+    - 특히 INDUS의 경우 2차형 변형을 적용하고난 후 pvalue 값이 크게 낮아졌다. 즉 종속변수에 영향을 미치는 변수로 바뀌었다.
+    - AGE의 pvalue도 낮아졌지만 현재 모델에서 가장 높은 값이다.
+2) **성능지표 : 성능이 개선되었다.**
+    - rsquared : 0.8519
+    - r2_adj : 0.8442
+    - f_value : 111.5593
+    - aic : 2373
+    - bic : 2473
+3) **독립변수의 비선형 변형으로 모델의 성능이 조금 향상 되었다.** 특히 F-검정 값이 상당히 개선 됐는데 데이터 자체가 모형에 적합해졌다고 볼 수 있다.
+
+```python
+f3_2_trans_X = dmatrix_X_df(formula_3_2, df_2)
+f3_2_model, f3_2_result = modeling_dmatrix(dfy.iloc[non_ol_idx], f3_2_trans_X)
+f3_2_model_2, f3_2_result_2 = modeling_non_const("MEDV ~ " + formula_3_2, df_2)
+
+print(f_3_2_result_2.summary())
+```
+![f3_trans_report.jpg](./images/model_5/f3_trans_report.jpg)
+
+### 5-7. 성능 지표 비교
+- **이전 모델보다 성능이 조금 향상되었다.**
+
+```python
+stats_to_df(f2_stats_df_non_ol, "f3_2_result_2")
+```
+![f3_trans_stats_df.jpg](./images/model_5/f3_trans_stats_df.jpg)
+
+### 5-8. 교차 검증
+- **과최적화는 없는 것으로 보인다.**
+- test score : 0.8540
+- train score : 0.8280
+
+#### KFold를 사용한 교차검증
+
+```python
+### cross_val_func 함수의 수정
+
+train_s, test_s = cross_val_func(6, df_2, "MEDV ~" + formula_3_2)
+train_s, test_s
+```
+![f3_trans_cv_score.jpg](./images/model_5/f3_trans_cv_score.jpg)
+
+### 5-9. 잔차의 정규성 검정 : 자크베라 검정
+- **이전 모델링과 비교했을 때 잔차의 정규성이 개선 된것으로 보인다.**
+    - pvalue   : 0.0 
+    - skew      : 1.52 -> 0.78 -> 0.39 -> 0.36
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53
+
+```python
+models = ["f_result_2", "f1_result_2", "f2_result_2",
+          "f2_result_2_non_ol", "f3_2_result_2"]
+
+resid_jbtest_df(models)
+```
+![f3_trans_jb_test.jpg](./images/model_5/f3_trans_jb_test.jpg)
+
+
+### 5-10. 잔차의 정규성 검정 : QQ플롯
+- **잔차의 분포가 정규분포에 조금더 가까워진 것으로 보인다.**
+    - 오른쪽 꼬리부분이 미미하게 직선에 가까워 졌다.
+
+```python
+plt.figure(figsize=(10, 6))
+plt.subplot(121)
+sp.stats.probplot(f2_result_2_non_ol.resid, plot=plt)
+plt.title("f2 아웃라이어 제거 전")
+
+plt.subplot(122)
+sp.stats.probplot(f3_2_result_2.resid, plot=plt)
+plt.title("f2 아웃라이어 제거 후")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f3_trans_qq.jpg](./images/model_5/f3_trans_qq.jpg)
+
+### 5-11. VIF, Correlation, ANOVA
+- vif : NOX, INDUS, LSTAT의 의존성이 높은 것으로 보인다.
+- corr : NOX, INDUS, LSTAT, TAX, DIS, AGE의 상관관계가 높은 것으로 보인다.
+- anova : NOX, AGE, ZN의 중요도가 낮은 것으로 보인다.
+
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f3_2_trans_X, f3_2_result_2, 0.6)
+vca_df.sort_values("VIF", ascending=False)
+```
+![f3_trans_vca_df.jpg](./images/model_5/f3_trans_vca_df.jpg)
+
+### 5-12. 상관관계 히트맵
+- RAD의 높은 상관관계가 범주형 처리로 상쇄되었다.
+- **특이한 점은 전체 변수들의 상관관계가 크게달라 지지 았았다. 높은 상관관계를 보인 INDUS, NOX, LSTAT는 비선형 변형을 했음에도 상관관계는 거의 변화가 없거나 더 높아지기도 했다.**
+- 비선형 변형을 적용했는데도 상관관계가 높거나, anova 값이 높은 경우는 VIF 값을 비교하여 제거 하는 것이 도움이 될 수 있을 것으로 보인다.
+
+```python
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn")
+plt.show() ;
+```
+![f3_trans_corr_matrix.jpg](./images/model_5/f3_trans_corr_matrix.jpg)
+
+
+
+
+
+
+
+
+
 
 
 
