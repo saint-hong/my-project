@@ -1167,7 +1167,7 @@ f2_model_non_ol, f2_reuslt_non_ol = modeling_dmatrix(dfy.iloc[non_ol_idx],
 
 print(f2_reuslt_non_ol.summary())
 ```
-![f2_non_ol_report.jpg](./images/model_4/f2_non_ol_report)
+![f2_non_ol_report.jpg](./images/model_4/f2_non_ol_report.jpg)
 
 
 ### 4-2. 교차 검증
