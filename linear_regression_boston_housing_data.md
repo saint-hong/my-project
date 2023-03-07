@@ -1300,6 +1300,7 @@ for i, col in enumerate(cols) :
 plt.tight_layout()
 plt.show() ;
 ```
+
 ![f3_trans_dist.jpg](./images/model_5/f3_trans_dist.jpg)
 
 ### 5-2. 독립변수의 비선형 변형과 성능값 비교
@@ -1329,7 +1330,6 @@ crim_df_iniv, crim_df_cumula = feature_trans(df_2, "NOX", 3)
 plot_pred("NOX + np.log(NOX)", "NOX")
 ```
 ![f3_trans_nox_2.jpg](./images/model_5/f3_trans_nox_2.jpg)
-
 
 #### RAD
 - **범주형 처리를 적용해보면 좋을 것 같다.**
@@ -1547,7 +1547,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn")
 plt.show() ;
 ```
-![f3_trans_corr_matrix.jpg](./images/model_5/f3_trans_corr_matrix.jpg)
+![f3_trans_corr_matrix.png](./images/model_5/f3_trans_corr_matrix.png)
 
 
 
