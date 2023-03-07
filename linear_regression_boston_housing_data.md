@@ -1300,7 +1300,7 @@ for i, col in enumerate(cols) :
 plt.tight_layout()
 plt.show() ;
 ```
-![f3_trans_dist.jpg](./images/f3_trans_dist.jpg)
+![f3_trans_dist.jpg](./images/model_5/f3_trans_dist.jpg)
 
 ### 5-2. 독립변수의 비선형 변형과 성능값 비교
 
@@ -1328,7 +1328,7 @@ crim_df_iniv, crim_df_cumula = feature_trans(df_2, "NOX", 3)
 ```python
 plot_pred("NOX + np.log(NOX)", "NOX")
 ```
-![f3_trans_nox_2.jpg](./images/model_4/f3_trans_nox_2.jpg)
+![f3_trans_nox_2.jpg](./images/model_5/f3_trans_nox_2.jpg)
 
 
 #### RAD
