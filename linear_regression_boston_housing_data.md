@@ -2570,6 +2570,165 @@ set(ol_idx_4).intersection(set(ol_re_gen.index))
 6) **그러나 이 모델의 아웃라이어를 측정했을때 복원한 아웃라이어가 그대로 포함되는 것을 확인 할 수 있었다.** 즉 MEDV=50 인 데이터는 어떤 조건을 적용하여도 아웃라이어로 측정된다는 것을 의미한다. 폭스 아웃라이어 추전값이라는 기준을 유지하기 위해 1, 2차 아웃라이어의 복원은 더 이상 진행하지 않았고, 3차아웃라이러를 제거 후 모델링을 진행 하였다
 7) 아웃라이어 제거후, VIF와 corr 값을 비교하여 변수선택 모델을 테스트 한다.
 
+## 9. 모델링 9 : m_f9
+
+#### 요약
+- formula_5 + 3차 아웃라이어 제거
+    - MEDV=50 아웃라이어를 복구 해봤지만 다시 아웃라이어로 포함되어 제거함
+- 현재 모델은 모든 독립변수의 비선형 변형을 적용한 formula_5_3을 사용함
+- 사용한 데이터 : df_4
+
+#### 아웃라이어 제거 요약
+- **formula_5 모델에서 아웃라이어를 측정하고 22개의 아웃라이어를 제거 하였다.**
+    - 성능과 잔차의 정규성이 개선 되었다.
+
+### 9-1. 아웃라이어 제거 데이터 프레임
+- 3차 아웃라이어를 제거한 데이터 프레임 : df_4
+
+```python
+df_4 = non_ol_df_4
+df_4.shape
+
+>>> print
+
+(424, 14)
+```
+
+### 9-2. 3차 아웃라이어를 제거한 데이터를 사용한 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+    - 3차 아웃라이어 제거 후 RM의 pvalue가 크게 낮아졌다. ZN과 NOX의 pvalue는여전히 높은 것으로 확인된다. 
+    - RAD의 카테고리형 2에서 pvalue의 값이 높은 것으로 확인 된다. 
+    - 전반적으로 pvalue 값이 낮아졌고, 특정한 독립변수의 pvalue가 높게 나오는 현상이 보인다.
+2) **성능 지표**
+    - rsquared : 0.910799 (개선됨)
+    - r2_adj : 0.903 (개선됨)
+    - f_value : 124.8 (거의 유지)
+    - aic : 1867 (개선됨)
+    - bic : 2001 (개선됨)
+
+```python
+f5_3_non_ol_trans_X = dmatrix_X_df(formula_5_3, df_4)
+f_model, f_result = modeling_dmatrix(df_4["MEDV"], f5_3_non_ol_trans_X)
+f5_3_model_2_non_ol, f5_3_result_2_non_ol = \
+modeling_non_const("MEDV ~ " + formula_5_3, df_4)
+
+print(f5_3_result_2_non_ol.summary())
+```
+![f53_non_ol_report_1.jpg](./images/model_9/f53_non_ol_report_1.jpg)
+![f53_non_ol_report_2.jpg](./images/model_9/f53_non_ol_report_2.jpg)
+
+### 9-3. 성능 지표
+- **아웃라이어를 제거한 후 모델의 성능이 개선 된 것을 알 수 있다.**
+
+```python
+f5_3_non_ol_stats_df = stats_to_df(f5_3_stats_df, "f5_3_result_2_non_ol")
+f5_3_non_ol_stats_df
+```
+![f53_non_ol_stats.jpg](./images/model_9/f53_non_ol_stats.jpg)
+
+
+### 9-4. 교차 검증
+- **과최적화는 없는 것으로 보인다. 아웃라이어 제거전 모델의 교차검증과 큰 차이가 없다.**
+    - test score : 0.91271
+    - train score : 0.88837
+
+```python
+train_s, test_s = cross_val_func(5, df_4, "MEDV ~" + formula_5_3)
+train_s, test_s
+```
+![f53_non_ol_cv_score.jpg](./images/model_9/f53_non_ol_cv_score.jpg)
+
+
+### 9-5. 잔차의 정규성 검정 : 자크베라 검정
+- **자크베라 검정의 유의 확률이 0.3이 되었고 skew 값도 0.18로 0에 가까워진 것으로 보아 잔차의 정규성이 크게 개선되었다. 잔차의 분포가 정규분포에 가까워진 것으로 볼 수 있다.**
+    - pvalue : 0.0  -> 0.11 -> 0.03 -> 0.30
+    - skew : 1.52 -> 0.78 -> 0.39 -> 0.36 -> 0.44 -> 0.23 -> 0.29 -> 0.18
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53 -> 4.00 -> 3.20 -> 3.26 -> 3.05
+
+```python
+models = list(f5_3_non_ol_stats_df.columns)
+models[0] = "f_result_2"
+resid_jbtest_df(models)
+```
+![f53_non_ol_jb_test.jpg](./images/model_9/f53_non_ol_jb_test.jpg)
+
+### 9-6. 잔차의 정규성 검정 : QQ플롯
+- **오른쪽 상단의 떨어져 있던 잔차들이 사라졌고 중심분포도 거의 직선에 가까워 졌다. 따라서 잔차가 정규분포에 가까워 졌다는 것을 알 수 있다.**
+    - formula4, formula5와 아웃라이어 제거 모델의 QQ 플롯을 비교
+
+```python
+plt.figure(figsize=(8, 8))
+plt.subplot(221)
+sp.stats.probplot(f4_result_2_non_ol.resid, plot=plt)
+plt.title("f4 모델")
+
+plt.subplot(222)
+sp.stats.probplot(f5_3_result_2.resid, plot=plt)
+plt.title("f5_3 모델")
+
+plt.subplot(223)
+sp.stats.probplot(f5_3_result_2_non_ol.resid, plot=plt)
+plt.title("f5_3 아웃라이어 제거 모델")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f53_non_ol_qq.jpg](./images/model_9/f53_non_ol_qq.jpg)
+
+### 9-7. 표준화 잔차의 분포
+- **3차 아웃라이어 제거 후 표준화 잔차의 분포를 통해서 3 이상의 아웃라이어가 없다는 것을 알 수 있다.**
+
+```python
+plt.figure(figsize=(8, 6))
+plt.stem(f5_3_result_2_non_ol.resid_pearson)
+plt.axhline(3, c="g", ls="--")
+plt.axhline(-3, c="g", ls="--")
+plt.show() ;
+```
+![f53_non_ol_resid_1.jpg](./images/model_9/f53_non_ol_resid_1.jpg)
+
+
+### 9-8. VIF, Correlation, ANOVA
+- **vca 지표와 상관관계 히트맵을 사용하여 다음 모델링에서 변수선택을 실행한다.**
+
+#### vca 지표
+
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f5_3_non_ol_trans_X, f5_3_result_2_non_ol, 0.6)
+```
+![f53_non_ol_vca_df_1.jpg](./images/model_9/f53_non_ol_vca_df_1.jpg)
+![f53_non_ol_vca_df_2.jpg](./images/model_9/f53_non_ol_vca_df_2.jpg)
+
+#### 상관관계 히트맵
+
+```python
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
+plt.show() ;
+```
+![f53_non_ol_corr_matrix.png](./images/model_9/f53_non_ol_corr_matrix.png)
+
+
+## <모델링 9의 분석>
+1) formula_5에서 모든 독립변수의 비선형 변형을 적용하였고, 3차 아웃라이어를 측정하여 제거하였다.
+2) **모델의 성능은 0.91로 개선되었고, 과최적화는 발견되지 않았다.** 잔차의 정규성도 개선되어 QQ플롯이나 잔차의 누적분포를 확인해보아도 잔차가 정규분포에 가까워 졌다는 것을 알 수 있었다.
+3) **현재 모델(m_f9)을 확정하고 다음 모델링에서 성능을 더 개선시키기 위해 VIF 값을 기준으로 변수선택법을 적용한다.** 
+    - 다른 독립변수에 대한 의존성의 정도를 의미하는 값인 VIF와 상관관계를 나타내는 corr 값을 비교하여 변수선택에서 제외할 독립변수를 정하고 모델링을 하기로 한다.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
