@@ -2738,7 +2738,7 @@ scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)
 ```python
 feature_trans(df_4, "LSTAT", 3)
 ```
-![f66_lstat_dist_1.jpg](./images/model_9/f66_lstat_dist_1.jpg)
+![f66_lstat_dist_1.jpg](./images/model_10/f66_lstat_dist_1.jpg)
 
 
 #### 로그 변형을 적용한 예측값과 성능
@@ -2747,7 +2747,7 @@ feature_trans(df_4, "LSTAT", 3)
 ```python
 plot_pred(df_4, "np.log(LSTAT)", "LSTAT")
 ```
-![f66_lstat_dist_2.jpg](./images/model_9/f66_lstat_dist_2.jpg)
+![f66_lstat_dist_2.jpg](./images/model_10/f66_lstat_dist_2.jpg)
 
 ### 10-2. formula_6으로 모델링
 
@@ -2856,13 +2856,61 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-![f66_log_lstat_corr_matrix.jpg](./images/model_10/f66_log_lstat_corr_matrix.jpg)
+![f66_log_lstat_corr_matrix.png](./images/model_10/f66_log_lstat_corr_matrix.png)
 
 ## <모델링 10의 분석>
 1) **LSTAT 변수의 종속변수와의 분포 형태에 더 적합하도록 로그 변형을 적용하였고, 성능이 좀 더 개선되었다.** 독립변수와 종속변수의 분포는 선형관계이어야 좋은 모델이라고 할 수 있으나, 비선형 관계인 경우는 독립변수의 비선형 변형을 통해서 비선형 관계를 줄여줄 수 있다. 이러한 방식으로 모든 독립변수의 비선형 변형을 적용하였다. 다만 어떤 비선형 변형이 더 적합한지는 모델링을 통하여 개선해 나가야한다는 것을 알 수 있었다.
 2) **이러한 측면에서 선형회귀모델에서 모델의 성능은 독립변수의 비선형 변형의 영향을 크게 받는다.** 독립변수의 비선형 변형을 위해 다항 차수를 늘릴수록 성능이 개선되지만 차수가 커질 수록 과최적화가 발생하는 문제가 생긴다. 이러한 문제를 개선하기 위한 방법으로 VIF 변수선택, PCA 차원축소, 정규화 모델링 등이 있다.
 3) **LSTAT의 로그 변형을 적용한 후 잔차의 정규성도 개선 되었다.** 최초 모델링을 실험했던 모델의 잔차보다 정규성이 더 뚜렷해졌다는 것을 알 수 있었다. 선형회귀모델에서 잔차는 확률론적 선형회귀 조건에 의해서 정규분포를 따라야 하는데, 모델링을 할때마다 잔차의 분포가 어떻게 개선되는지 파악하며 정규성을 검정해야 한다.
 4) **다음 모델링에서는 현재 모델을 기준으로 VIF를 테스트 해보기로 한다.**
+
+## 11. 모델링 11 : m_f11
+
+#### 요약
+- **formula_6을 사용하여 변수선택을 적용**
+- **VIF, corr, ANOVA 값을 비교하여 제거할 컬럼 선택**
+    - PTRATIO, CRIM, NOX, ZN, DIS, AGE
+    - ZN, AGE, NOX는 제거 후에도 성능이 큰 차이가 없으므로 조합하여 추가 제거
+- **성능**
+    - ZN > AGE > (ZN, AGE) > NOX > (ZN, AGE, NOX) > DIS > CRIM > PTRATIO
+
+### 11-1. VIF 변수선택법
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
