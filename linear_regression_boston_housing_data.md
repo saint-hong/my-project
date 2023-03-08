@@ -44,13 +44,16 @@
     - 잔차의 정규성 검정값 비교
 
 ## 2. Boston Housing Data의 배경
+<p align="center">
+	<figure>
+		<img src = "./images/boston_map_4.jpg" width="60%"/>
+		<figcaption>
+			<em> 선거구별로 나누어진 보스턴 도시의 지도 </em>
+		</figcaption>
+	</figure>
+</p>
+	
 
-<figure>
-	<img src = "./images/boston_map_4.jpg" width="60%"/>
-	<figcaption>
-		<em> 선거구별로 나누어진 보스턴 도시의 지도 </em>
-	</figcaption>
-</figure>
 
 > **보스턴은** 미국 메사추세츠 주의 주 도시로 교육, 의료, 경제, 항만, 문화 산업이 발달한 미국의 대표적인 도시중 하나이다. 특히 "미국의 아테네"라는 수식어에 걸맞게 아름다운 보스턴 항만과 찰스강을 따라서 세계적인 수준의 대학교와 교육기관들이 자리잡고 있으며, 이들 대학교에서 운영하는 의료시설들과 보스턴 정부의 다채로운 문화산업 시설들이 있어 높은 수준의 인프라 환경을 자랑하는 세계적인 도시로 알려져 있다. 
 
