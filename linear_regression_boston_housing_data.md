@@ -2714,10 +2714,155 @@ plt.show() ;
 ## <모델링 9의 분석>
 1) formula_5에서 모든 독립변수의 비선형 변형을 적용하였고, 3차 아웃라이어를 측정하여 제거하였다.
 2) **모델의 성능은 0.91로 개선되었고, 과최적화는 발견되지 않았다.** 잔차의 정규성도 개선되어 QQ플롯이나 잔차의 누적분포를 확인해보아도 잔차가 정규분포에 가까워 졌다는 것을 알 수 있었다.
-3) **현재 모델(m_f9)을 확정하고 다음 모델링에서 성능을 더 개선시키기 위해 VIF 값을 기준으로 변수선택법을 적용한다.** 
-    - 다른 독립변수에 대한 의존성의 정도를 의미하는 값인 VIF와 상관관계를 나타내는 corr 값을 비교하여 변수선택에서 제외할 독립변수를 정하고 모델링을 하기로 한다.
+3) 다음 모델링에서 최종 모델의 확정을 위해서 지금까지 진행한 독립변수의 비선형 변형 중 변경할 것이 있는지 확인하고 다른 비선형 변형을 적용해 보기로 한다.
 
 
+## 10. 모델링 10 : m_f10
+
+#### 요약
+- **formula_6 : formula_5에서 LSTAT 독립변수를 scale(np.log(LSTAT)) 적용**
+```
+scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))
+```
+- **현재 비선형 변형의 일부 변경**
+    - LSTAT 독립변수의 비선형 변형을 2차형 변형에서 로그 변형으로 수정
+    - 분포의 비선형 관계가 로그 변형에 좀 더 가까운 것으로 보임
+    - 이와 함께 다른 독립변수들도 다른 비선형 변형을 적용하였지만 성능이 개선 되지 않음(PTRATIO, DIS)
+- **사용한 데이터 : df_4 (3차 아웃라이어 제거 데이터)**
+
+### 10-1. LSTAT 독립변수의 비선형 변형 수정
+- **2차형 변형을 하였던 LSTAT 변수를 로그변형 하면 성능이 좀더 개선되는 것을 확인할 수 있었다.**
+
+#### 2차, 3차 비선형 변형을 적용한 예측값과 성능
+
+```python
+feature_trans(df_4, "LSTAT", 3)
+```
+![f66_lstat_dist_1.jpg](./images/model_9/f66_lstat_dist_1.jpg)
+
+
+#### 로그 변형을 적용한 예측값과 성능
+- **종속변수와의 분포에서 로그 변형 적용시 성능이 더 좋아진 것을 알수 있다.**
+
+```python
+plot_pred(df_4, "np.log(LSTAT)", "LSTAT")
+```
+![f66_lstat_dist_2.jpg](./images/model_9/f66_lstat_dist_2.jpg)
+
+### 10-2. formula_6으로 모델링
+
+#### <OLS report 분석>
+1) **예측 가중치 계수**
+    -  LSTAT 변수를 로그변형 한 후 DIS 변수의 pvalue가 크게 낮아졌다. RM 카테고리 6값은 크게 커졌다. ZN이 가장 높게 나타난다.
+    - 전반적으로 pvalue 값이 낮아졌고, 특정한 독립변수의 pvalue가 높게 나오는 현상이 보인다.
+2) **성능 지표**
+    - rsquared : 0.911350 (개선됨)
+    - r2_adj : 0.904 (개선됨)
+    - f_value : 130 (다소 높아짐)
+    - aic : 1863 (개선됨)
+    - bic : 1992 (개선됨)
+
+```python
+f6_trans_X = dmatrix_X_df(formula_6, df_4)
+f6_model, f6_result = modeling_dmatrix(df_4["MEDV"], f6_trans_X)
+f6_model_2, f6_result_2 = modeling_non_const("MEDV ~ " + formula_6, df_4)
+
+print(f6_result_2.summary())
+```
+![f66_lstat_report_1.jpg](./images/model_10/f66_lstat_report_1.jpg)
+![f66_lstat_report_2.jpg](./images/model_10/f66_lstat_report_2.jpg)
+
+
+### 10-3. 교차 검증
+- **과최적화는 없는 것으로 보인다.**
+    - test score : 0.91329
+    - train score : 0.88802
+
+#### KFold를 사용한 교차검증
+
+```python
+train_s, test_s = cross_val_func(5, df_4, "MEDV ~" + formula_6)
+train_s, test_s
+```
+![f66_log_lstat_cv_score.jpg](./images/model_10/f66_log_lstat_cv_score.jpg)
+
+### 10-4. 잔차의 정규성 검정 : 자크베라 검정
+- **잔차의 정규성이 개선되었다.**
+    - pvalue   : 0.0  -> 0.11 -> 0.03 -> 0.30 -> 0.39
+    - skew      : 1.52 -> 0.78 -> 0.39 -> 0.36 -> 0.44 -> 0.23 -> 0.29 -> 0.18 -> 0.16
+    - kurtosis : 8.28 -> 6.59 -> 3.55 -> 3.53 -> 4.00 -> 3.20 -> 3.26 -> 3.05 -> 3.08
+
+```python
+models = models + ["f6_result_2"]
+resid_jbtest_df(models)
+```
+![f66_log_lstat_jb_test.jpg](./images/model_10/f66_log_lstat_jb_test.jpg)
+
+### 10-5. 잔차의 정규성 검정 : QQ플롯
+- **잔차의 정규성이 개선되었다.**
+    - LSTAT의 로그 변형 적용후 QQ플롯의 오른쪽 끝부분의 휘어짐이 다소 줄어 들었다.
+
+```python
+plt.figure(figsize=(8, 8))
+plt.subplot(221)
+sp.stats.probplot(f4_result_2_non_ol.resid, plot=plt)
+plt.title("f4 모델")
+
+plt.subplot(222)
+sp.stats.probplot(f5_3_result_2.resid, plot=plt)
+plt.title("f5_3 모델")
+
+plt.subplot(223)
+sp.stats.probplot(f5_3_result_2_non_ol.resid, plot=plt)
+plt.title("f5_3 아웃라이어 제거 모델")
+
+plt.subplot(224)
+sp.stats.probplot(f6_result_2.resid, plot=plt)
+plt.title("f5_3 아웃라이어 제거 모델")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f66_log_lstat_qq.jpg](./images/model_10/f66_log_lstat_qq.jpg)
+
+### 10-6. 잔차와 종속변수의 분포
+- **기울기가 양수인 타원형의 분포인 것으로 보인다.**
+    - 좋은 모형일 수록 기울기가 1인 직선에 가까워진다. 그러나 현실 데이터에서는 타원형태로 나타난다.
+
+```python
+plt.figure(figsize=(8, 6))
+sns.scatterplot(df_4["MEDV"], f6_result_2.resid, alpha=0.5)
+plt.show() ;
+```
+![f66_log_lstat_resid_medv.jpg](./images/model_10/f66_log_lstat_resid_medv.jpg)
+
+### 10-7. VIF, Correlation, ANOVA
+- **현재 모델의 vca 지표와 상관관계 히트맵을 사용하여 다음 모델링에서 변수선택을 진행한다.**
+
+
+#### vca 지표
+
+```python
+corr_matrix, vca_df = vif_corr_anova_df(f6_trans_X, f6_result_2, 0.6)
+vca_df
+```
+![f66_log_lstat_vca_df_1.jpg](./images/model_10/f66_log_lstat_vca_df_1.jpg)
+![f66_log_lstat_vca_df_2.jpg](./images/model_10/f66_log_lstat_vca_df_2.jpg)
+
+#### 상관관계 히트맵
+
+```python
+plt.figure(figsize=(15, 15))
+sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
+plt.show() ;
+```
+![f66_log_lstat_corr_matrix.jpg](./images/model_10/f66_log_lstat_corr_matrix.jpg)
+
+## <모델링 10의 분석>
+1) **LSTAT 변수의 종속변수와의 분포 형태에 더 적합하도록 로그 변형을 적용하였고, 성능이 좀 더 개선되었다.** 독립변수와 종속변수의 분포는 선형관계이어야 좋은 모델이라고 할 수 있으나, 비선형 관계인 경우는 독립변수의 비선형 변형을 통해서 비선형 관계를 줄여줄 수 있다. 이러한 방식으로 모든 독립변수의 비선형 변형을 적용하였다. 다만 어떤 비선형 변형이 더 적합한지는 모델링을 통하여 개선해 나가야한다는 것을 알 수 있었다.
+2) **이러한 측면에서 선형회귀모델에서 모델의 성능은 독립변수의 비선형 변형의 영향을 크게 받는다.** 독립변수의 비선형 변형을 위해 다항 차수를 늘릴수록 성능이 개선되지만 차수가 커질 수록 과최적화가 발생하는 문제가 생긴다. 이러한 문제를 개선하기 위한 방법으로 VIF 변수선택, PCA 차원축소, 정규화 모델링 등이 있다.
+3) **LSTAT의 로그 변형을 적용한 후 잔차의 정규성도 개선 되었다.** 최초 모델링을 실험했던 모델의 잔차보다 정규성이 더 뚜렷해졌다는 것을 알 수 있었다. 선형회귀모델에서 잔차는 확률론적 선형회귀 조건에 의해서 정규분포를 따라야 하는데, 모델링을 할때마다 잔차의 분포가 어떻게 개선되는지 파악하며 정규성을 검정해야 한다.
+4) **다음 모델링에서는 현재 모델을 기준으로 VIF를 테스트 해보기로 한다.**
 
 
 
