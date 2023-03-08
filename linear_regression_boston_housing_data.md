@@ -46,7 +46,7 @@
 ## 2. Boston Housing Data의 배경
 <figure>
 	<p align=center> <img src = "./images/boston_map_4.jpg" width="60%"/> <p>
-	<figcaption align=center>
+	<figcaption class="figure-caption text-center">
 		<em> 선거구별로 나누어진 보스턴 도시의 지도 </em>
 	</figcaption>
 </figure>	
