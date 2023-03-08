@@ -44,7 +44,7 @@
     - 잔차의 정규성 검정값 비교
 
 ## 2. Boston Housing Data의 배경
-<figure>
+<figure style="text-align: center;">
 	<p align=center> <img src = "./images/boston_map_4.jpg" width="60%"/> </p>
 	<figcaption style="text-align: center;"> 선거구별로 나누어진 보스턴 도시의 지도 </figcaption>
 </figure>	
