@@ -2873,39 +2873,256 @@ plt.show() ;
     - ZN, AGE, NOX는 제거 후에도 성능이 큰 차이가 없으므로 조합하여 추가 제거
 - **성능**
     - ZN > AGE > (ZN, AGE) > NOX > (ZN, AGE, NOX) > DIS > CRIM > PTRATIO
+- **현재 모델은 과최적화가 발생하지 않았지만 변수선택을 통해서 모델의 성능이 개선되는지 확인한다.**
 
 ### 11-1. VIF 변수선택법
+- **어떤 독립변수를 제거할 것인지 선택하기 위해서 VIF 값을 사용하고, 상관관계와 ANOVA 값을 참고한다.**
+    - VIF 값이 높을 수록 다른 변수에 의존성이 높음 : 제거
+    - Corr 값이 높을 수록 다른 변수와 상관관계가 높음 : 제거
+    - ANOVA의 유의확률이 높을 수록 예측 가중치가 0이라는 귀무가설 채택 : 제거
+        - ANOVA는 변수선택의 기준은 아니지만 변수의 중요도를 확인할 수 있다.
+- **VIF 값이 높은 독립변수들**
+    - scale(PTRATIO) : 상관관계 낮은편
+    - scale(I(PTRATIO ** 2)) : 상관관계 낮은편
+    - scale(I(CRIM ** 2)) : 상관관계 낮은편
+    - scale(NOX) : 상관관계 높은편
+    - scale(I(NOX ** 2)) : 상관관계 높은편
+    - scale(I(CRIM ** 3)) : 상관관계 낮은편
+    - scale(CRIM) : 상관관계 낮은편
+- **Corr 값이 높은 독립변수들**
+    - scale(INDUS)
+    - scale(NOX) 
+    - scale(I(NOX ** 2))
+    - scale(I(DIS ** 2))
+    - scale(DIS)
+    - scale(I(AGE ** 2))
+    - scale(AGE)
+- **ANOVA의 유의확률이 높은 독립변수들**
+    - scale(ZN)
+    - scale(I(ZN ** 2))
+    - scale(NOX)
+    - scale(I(NOX ** 2))
+
+#### 변수선택법 적용 요약
+- **위에서 선별한 독립변수 중에서 공통적인 것과 VIF 값이 큰 것을 비교하여 하나씩 제거 후 모델 성능을 비교하였다.**
+    - "PTRATIO", "CRIM", "NOX", "ZN", "DIS", "AGE"
+    - 성능 : ZN > AGE > (ZN, AGE) > NOX > (ZN, AGE, NOX) > DIS > CRIM > PTRATIO
+- **제거할 독립변수**
+    - "PTRATIO", "CRIM", "NOX", "ZN", "DIS", "AGE", ("ZN", "AGE"), ("ZN", "AGE", "NOX")
+    - ZN, AGE, NOX는 제거했을 때 성능이 유지되므로 조합을 추가하여 제거한다.
+- **제거했을 때 성능이 떨어지는 DIS, CRIM, PTRATIO**
+    - ANOVA 값이 작으므로 모델에서 중요도가 높다. 
+    - 따라서 이 변수들을 제거하면 모델의 성능이 떨어진다.
+    - PTRATIO는 VIF 값이 제일 크지만 ANOVA 값은 0이다.
+-  **제거했을 때 성능에 변화가 없는 ZN, AGE, NOX**
+    - VIF 값은 상대적으로 작고, ANOVA 값은 높다. 따라서 이 변수들을 제거해도 모델의 성능이 크게 변하지 않는다.
+    - VIF 선택은 다중공선성이 발생하는 경우 다른 독립변수에 의존도가 높은 변수를 제거하기위한 값으로 판단하면 좋다.    
+    - 다중공선성이 발생하지 않은 경우 VIF 값이 큰 변수를 제거해도 모델의 성능은 크게 변하지 않는 것으로 보인다.
+
+### 11-2. 변수선택법으로 독립변수 제거 후 모델링
+- **ZN 만 제거한 경우의 모델의 성능이 가장 좋았다.** 
+    - 즉 ZN은 제거되어도 모델에 영향을 미치지 않을 정도로 영향력이 미미하다고 볼 수 있다.
+- **PTRATIO 만 제거한 경우의 모델의 성능이 가장 낮았다.** 
+    - 즉 PTRATIO는 제거될 경우 모델에 영향을 미치는 독립변수로 생각 할 수 있다
+- ZN, AGE, ZN+AGE, NOX 를 제거한 경우 모델의 성능이 약간 낮아졌지만 모델 자체에 크게영향을 미친다고 볼 수 없다.
+- **ZN+AGE+NOX 를 함께 제거한 경우 모델의 성능이 감소한다.** 
+    - 각각의 독립변수로는 중요성이 떨어지지만 3가지를 함께 제거하면 모델에 영향을 주는 것으로 나타난다.
+- 변수선택법은 다중공선성이 발생할 정도로 독립변수간의 강한 상관관계가 나타날 경우에 의미가 있다고 보여진다. 
+    - 현재 모델에서는 다중공선성이 발생하지는 않기 때문에 변수를 제거해서 이득을 볼수 있는 것은 없는 것 같다. 독립변수를 제거하면 성능은 줄어들 수 밖에 없다. 
 
 
+#### formula_6를 독립변수 단위로 분리
+
+```python
+formula_6 = 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))'
+
+formula_6 = formula_6.split(" + ")
+formula_6
+
+>>> print
+
+['scale(CRIM)',
+ 'scale(I(CRIM**2))',
+ 'scale(I(CRIM**3))',
+ 'scale(ZN)',
+ 'scale(I(ZN**2))',
+ 'scale(INDUS)',
+ 'scale(I(INDUS**2))',
+ 'C(CHAS)',
+ 'scale(NOX)',
+ 'scale(I(NOX**2))',
+ 'C(np.round(RM))',
+ 'scale(AGE)',
+ 'scale(I(AGE**2))',
+ 'scale(DIS)',
+ 'scale(I(DIS**2))',
+ 'C(RAD)',
+ 'scale(TAX)',
+ 'scale(PTRATIO)',
+ 'scale(I(PTRATIO**2))',
+ 'scale(B)',
+ 'scale(I(B**2))',
+ 'scale(np.log(LSTAT))']
+```
+
+#### 제거할 독립변수들
+
+```python
+vif_delete = ["PTRATIO", "CRIM", "NOX", "ZN", "DIS", "AGE", ("ZN", "AGE"), ("ZN", "AGE", "NOX")]
+vif_delete
+
+>>> print
+
+['PTRATIO',
+ 'CRIM',
+ 'NOX',
+ 'ZN',
+ 'DIS',
+ 'AGE',
+ ('ZN', 'AGE'),
+ ('ZN', 'AGE', 'NOX')]
+```
+
+#### formula_6에서 변수에 해당하는 모든 비선형 변형을 제거
+
+```python
+vif_formula = [0] * len(vif_delete)
+
+## 제거할 독립변수들이 formula_6의 변수들과 일치하는지 확인하고 일치하지 않는 변수만 반환한다.
+for i in range(len(vif_delete)) :
+    
+    ## 변수를 제거한 formula를 저장할 True 임시 리스트
+    temp_lst = [True] * len(formula_6)
+    
+    ## 제거할 변수가 하나인지 조합인지 확인하여 반복문의 순회객체로 사용
+    if type(vif_delete[i]) == str :
+        confirm_num = 1
+    else :
+        confirm_num = len(vif_delete[i])
+    for l in range(confirm_num) :
+        for j in range(len(formula_6)) :
+            ## 제거할 변수가 formula와 일치하는 경우 False를 저장한다.
+	    if vif_delete[i][l] in formula_6[j] :
+                temp_lst[j] = False
+    
+    ## True, False 임시 리스트를 인덱서로 사용하여 formula를 인덱싱한 후 +로 연결하여 저장한다. 
+    vif_formula[i] = " + ".join(np.array(formula_6)[temp_lst])
+
+vif_formula
+
+>>> print
+
+['scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + scale(NOX) + scale(I(NOX**2)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + C(CHAS) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(AGE) + scale(I(AGE**2)) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(ZN) + scale(I(ZN**2)) + scale(INDUS) + scale(I(INDUS**2)) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(DIS) + scale(I(DIS**2)) + scale(B) + scale(I(B**2))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + scale(NOX) + scale(I(NOX**2)) + C(np.round(RM)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))',
+ 
+ 'scale(CRIM) + scale(I(CRIM**2)) + scale(I(CRIM**3)) + scale(INDUS) + scale(I(INDUS**2)) + C(CHAS) + C(np.round(RM)) + scale(DIS) + scale(I(DIS**2)) + C(RAD) + scale(TAX) + scale(PTRATIO) + scale(I(PTRATIO**2)) + scale(B) + scale(I(B**2)) + scale(np.log(LSTAT))']
+```
+
+#### 변수선택으로 변수를 제거한 formula 별로 모델링 후 성능 지표 반환
+- **가장 성능이 높은 것은 ZN 변수만 제거한 모델이다.**
+    - 그만큼 ZN이 모델에서 중요도가 낮다는 것을 의미한다.
+    - 의존성이 커서 불필요한 변수
+- **가장 성능이 낮은 것은 PTRATIO 변수만 제거한 모델이다.**
+    - PTRATIO 변수는 모델에서 중요도가 높다는 것을 의미한다.
+    - 의존성이 낮고 종속변수에 영향을 미치는 변수
+
+```python
+vif_scores = pd.DataFrame(model_stats, columns=["r2", "r2_adj", "fv", "aic", "bic"])
+vif_scores.index = vif_delete
+vif_scores = vif_scores.sort_values("r2", ascending=False).T
+vif_scores
+```
+![vif_stats_df.jpg](./images/model_11/vif_stats_df.jpg)
+
+### 11-3. ZN, AGE, ZN+AGE를 제거한 모델링
+- **ZN > AGE > ZN+AGE 제거 순으로 모델의 성능이 다르다.**
 
 
+#### ZN 제거 후 모델링 결과
+
+```python
+vif_del_3_result_2 = vif_result_obj[3]
+print(vif_del_3_result_2.summary())
+```
+![vif_del_zn_report_1.jpg](./images/model_11/vif_del_zn_report_1.jpg)
+![vif_del_zn_report_2.jpg](./images/model_11/vif_del_zn_report_2.jpg)
+
+#### AGE 제거 후 모델링 결과
+
+```python
+vif_del_5_result_2 = vif_result_obj[5]
+print(vif_del_5_result_2.summary())
+```
+
+![vif_del_age_report_1.jpg](./images/model_11/vif_del_age_report_1.jpg)
+![vif_del_age_report_2.jpg](./images/model_11/vif_del_age_report_2.jpg)
 
 
+#### ZN+AGE 제거 후 모델링 결과
+
+```python
+vif_del_6_result_2 = vif_result_obj[6]
+print(vif_del_6_result_2.summary())
+```
+![vif_del_znage_report_1.jpg](./images/model_11/vif_del_znage_report_1.jpg)
+![vif_del_znage_report_2.jpg](./images/model_11/vif_del_znage_report_2.jpg)
 
 
+### 11-4. 잔차의 정규성 검정 : 자크베라 검정
+- **전체 모델 중에서 ZN 독립변수을 제거한 모델의 잔차의 정규성이 가장 크다.**
+- **AGE, ZN+AGE 를 제거한 모델은 잔차의 정규성이 확연히 낮아진다.**
+
+```python
+models = models + ["vif_del_6_result_2"]
+resid_jbtest_df(models)
+```
+![vif_jb_test.jpg](./images/model_11/vif_jb_test.jpg)
 
 
+### 11-5. 잔차의 정규성 검정 : QQ플롯
+- **ZN만 제거한 경우 QQ플롯의 형태가 개선되었다.**
+- **AGE, ZN+AGE를 제거한 경우 QQ 플롯의 양끝의 휘어짐이 더 커지고, 중심분포에서 벗어난 잔차들이 늘어 났다.**
+
+```python
+plt.figure(figsize=(10, 10))
+plt.subplot(221)
+sp.stats.probplot(vif_del_3_result_2.resid, plot=plt)
+plt.title("ZN 제거")
+
+plt.subplot(222)
+sp.stats.probplot(vif_del_5_result_2.resid, plot=plt)
+plt.title("AGE 제거")
+
+plt.subplot(223)
+sp.stats.probplot(vif_del_6_result_2.resid, plot=plt)
+plt.title("ZN, AGE 제거")
+
+plt.tight_layout()
+plt.show() ;
+```
+![vif_qq.jpg](./images/model_11/vif_qq.jpg)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## <모델링 11의 분석>
+1) **VIF 값을 기준으로 corr, ANOVA 값을 잠고하여 제거할 변수를 선택하였다.**
+    - PTRATIO, CRIM, NOX, ZN, DIS, AGE
+2) **이 독립변수를 각각 제거한 모델의 성능은 다음과 같은 순서로 측정됐다.**
+    -  ZN > AGE > (ZN, AGE) > NOX > (ZN, AGE, NOX) > DIS > CRIM > PTRATIO
+3) **변수선택법 결과 모델의 성능이 더 높아지는 경우는 없었다.** 제거한 독립변수에 따라서 성능이 낮아지는 정도에 차이가 있었다. 변수선택법의 기능이 과최적화 된 모델에서 과최적화를 낮춰주는 것이다. 과최적화를 낮춘다는 의미는 독립변수간의 상관관계를 줄인다는 의미와 같다. 즉 의존성이 높은 변수를 임의로 제거함으로써 모델의 과최적화를 낮추어 성능을 유지하는 것과 같다.
+4) **현재 모델은 과최적화가 발생하지 않았으므로 변수선택법으로 의존성이 높은 변수를 제거해도 성능이 더 좋아지는 것은 아니라는 것을 알 수 있었다.**
+    - 다항회귀 모형의 방법으로 독립변수의 비선형 변형의 차수를 크게 늘릴경우 모델의 성능이 높아지지만 과최적화가 발생하게 되는데, 이러한 경우에 변수선택법으로 일부 변수를 제거하여 모델의 성능을 유지할 수 있다.
+5) 다음 모델링에서는 PCA를 사용하여 변수를 제거하는 대신 데이터의 특징을 유지한 채 데이터의 차원을 축소하여 모델링을 해보기로 한다.    
 
 
 
