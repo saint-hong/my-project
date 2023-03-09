@@ -3444,7 +3444,20 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f6_coef_pvalue_bar.png" width="70%"/> </p>
 
-## 5. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
+
+## 5. 최종모델의 부분회귀 플롯
+- 독립변수에서 다른 독립변수에 대한 의존성을 제거한 순수한 독립변수의 종속변수와의 상관관계 그래프
+
+```python
+fig = plt.figure(figsize=(10, 25))
+sm.graphics.plot_partregress_grid(f6_result_2, grid=(15, 3), fig=fig)
+plt.show() ;
+```
+
+<p align=center> <imc src="./images/result/f6_partial_regress.png" width="85%"/> </p>
+
+
+## 6. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
 - m_6이 m_1보다 잔차의 분포가 정규분포에 더 가까우므로 모델의 적합도가 더 높다고 볼 수 있다.
 - m_1은 2차형 곡선 처럼 휘어져 있고 중심분포에서 떨어진 데이터들의 거리가 멀다.
 - m_6의 분포는 직선에 가깝고 중심분포에서 떨어진 데이터들의 거리가 가깝다.
@@ -3466,12 +3479,12 @@ plt.show() ;
 ```
 ![f1_f6_qq.png](./images/result/f1_f6_qq.png)
 
-## 6. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
+## 7. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
 - 좋은 모델의 예측값과 종속값의 분포는 기울기가 1인 직선에 가깝다. 그러나 현실의 데이터에서는 타원형으로 나타난다.
 - m_1의 분포는 직선을 기준으로 분산의 폭이 크다. 또한 직선에서 벗어난 데이터들이 많이 존재한다. 
 - m_6의 분포는 직선을 기준으로 분산의 폭이 m_1보다 작다. 또한 직선에서 크게 벗어난 데이터가 존재하지 않는다. 따라서 m_6의 모델은 m_1 보다 더 적합하며 좋은 모델이라고 볼 수 있다.
 
-### 6-1. 예측가격과 실제가격 데이터 프레임 생성
+### 7-1. 예측가격과 실제가격 데이터 프레임 생성
 
 ```python
 df_4_X = df_4.iloc[:, :13]
@@ -3480,7 +3493,7 @@ f1_pred = f1_result_2.predict(dfX)
 f6_pred = f6_result_2.predict(df_4_X)
 ```
 
-### 6-2. 최초 모델과 최종 모델의 예측값-실제값 분포도 1
+### 7-2. 최초 모델과 최종 모델의 예측값-실제값 분포도 1
 
 ```python
 plt.figure(figsize=(10, 11))
@@ -3504,7 +3517,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" width="70%"/> </p>
 
-### 6-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
+### 7-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
 
 ```python
 plt.figure(figsize=(8, 6))
@@ -3522,5 +3535,4 @@ plt.tight_layout()
 plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f1_f6_pred_target_dist_2.png" width="70%"/> </p>
-
 
