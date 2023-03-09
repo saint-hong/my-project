@@ -3242,5 +3242,227 @@ print(pca_20_result.summary())
 3) **VIF 변수선택법과 PCA 차원축소 방법은 모두 다항회귀 모델의 차수를 크게 늘린 경우 모델의 높아진 성능을 유지하면서 과최적화를 없앨때 사용하는 것이 좋다.**
 4) 혹은 PCA 패키지의 다른 기능을 사용하면 과최적화가 발생하지 않은 모델에서 성능을 개선시키는 방법이 있는지 알아보는 것도 좋을 것 같다. 
 
+# <프로젝트 결과>
+
+## 1. 14개 모델의 성능 비교 : 데이터 프레임
+- **r2** : 결정계수
+- **r2_adj** : 조정 결정계수
+- **f_value** : F-검정 통계량
+- **aic, bic** : 정보량 규준값
+
+![model_stats_df.jpg](./images/result/model_stats_df.jpg)
+
+## 2. 14 모델의 성능 비교 : r2 산점도
+
+```python
+plt.figure(figsize=(10, 8))
+plt.scatter(range(14), f6_pca.loc["r2"], s=50, color="k")
+plt.scatter(f6_pca.loc["r2"].values.argmax(), f6_pca.loc["r2"].values.max(),
+            s=100, color="r")
+plt.axhline(f6_pca.loc["r2"].values.max(), linestyle="--", color="b", lw=0.8)
+plt.axvline(f6_pca.loc["r2"].values.argmax(), linestyle="--", color="b", lw=0.8)
+
+plt.xticks(range(14),
+           [["m_{}".format(i) if i <=11 else "m_pca{}".format(int(i%10))][0] \
+            for i in range(1, 15)], rotation=-30)
+plt.title("Models Compare : R2 Scores", fontsize=15, y=1.05)
+
+plt.grid(ls="-", color="k", lw=0.3)
+plt.ylim(0.73, 0.94)
+plt.show();
+```
+![model_r2_dist.png](./images/result/model_r2_dist.png)
+
+## 3. 최초 모델과 최종 모델의 잔차-종속변수 분포 비교
+
+```python
+# nrows : 행 갯수, ncols : 열 갯수
+fig, ax = plt.subplots(nrows=2, ncols=1, facecolor="white")
+sns.set_style(style='white')
+
+sns.regplot(x=f1_result_2.resid, y="MEDV", data=df, ax=ax[0])
+ax[0].set_yticks([0, 10, 20, 30, 40, 50, 60])
+ax[0].set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
+ax[0].grid(ls="-", color="k", lw=0.3)
+
+sns.regplot(x=f6_result_2.resid, y="MEDV", data=df_4, ax=ax[1])
+ax[1].set_yticks([0, 10, 20, 30, 40, 50, 60])
+ax[1].set_title("final model : resid, traget distirbution", fontsize=20, y=1.05)
+ax[1].grid(ls="-", color="k", lw=0.3)
+
+plt.tight_layout()
+plt.show() ;
+```
+![resid_target_dist.png](./images/result/resid_target_dist.png)
+
+## 3. 최초 모델과 최종 모델의 예측 가중치 비교
+
+### 3-1. 최초 모델의 예측 가중치 막대 그래프
+
+```python
+## f1 모델의 예측 가중치 데이터 프레임 생성
+f1_model_features = pd.DataFrame(f1_result_2.params).reset_index()
+f1_model_features.columns = ["features", "coef"]
+## positive 컬럼에 예측 가중치가 양수이면 True, 음수이면 False를 저장
+f1_model_features["positive"] = f1_model_features["coef"] > 0
+## 예측 가중치의 크기 순으로 정렬
+f1_model_features = f1_model_features.sort_values("coef")
+f1_model_features.set_index("features", inplace=True)
+
+## 예측 가중치 수평 막대 그래프 생성
+fig = plt.figure(figsize=(10, 10), facecolor="white")
+ax = plt.subplot()
+plt.barh(f1_model_features.index, f1_model_features["coef"],
+        color=f1_model_features["positive"].map({True : "blue", False : "red"}))
+ax.grid(ls="-", color="k", lw=0.3)
+
+plt.show() ;
+```
+![f1_coef_bar.png](./images/result/f1_coef_bar.png)
+
+### 3-2. 최초 모델의 예측 가중치의 유의확률 막대 그래프
+
+```python
+## 예측 가중치 데이터 프레임에 유의 확률 컬럼 생성
+f1_model_pvalue = pd.DataFrame(f1_result_2.pvalues[1:], columns=["pvalue"])
+f1_model_pvalue["pvalue"] = np.round(f1_model_pvalue["pvalue"], 3)
+f1_model_features2 = pd.concat([f1_model_features, f1_model_pvalue], axis=1)
+## 유의확률이 0.1보다 작으면 True, 크면 False를 저장
+f1_model_features2["positive2"] = f1_model_features2["pvalue"] <= 0.1
+
+## 예측 가중치의 유의 확률을 기준으로 막대 그래프 생성
+fig = plt.figure(figsize=(10, 10), facecolor="white")
+ax = plt.subplot()
+plt.barh(f1_model_features2.index, f1_model_features2["coef"],
+        color=f1_model_features2["positive2"].map({True : "blue", False : "red"}))
+ax.grid(ls="-", color="k", lw=0.3)
+
+plt.show() ;
+```
+![f1_coef_pvalue_bar.png](./images/result/f1_coef_pvalue_bar.png)
+
+
+### 3-3. 최종 모델의 예측 가중치 막대 그래프
+
+```python
+## f6 모델의 예측 가중치 데이터 프레임 생성
+f6_model_features = pd.DataFrame(f6_result_2.params).reset_index()
+f6_model_features.columns = ["features", "coef"]
+## positive 컬럼에 예측 가중치가 양수이면 True, 음수이면 False를 저장
+f6_model_features["positive"] = f6_model_features["coef"] > 0
+## 예측 가중치의 크기 순으로 정렬
+f6_model_features = f6_model_features.sort_values("coef")
+f6_model_features.set_index("features", inplace=True)
+## 상수항 제거
+f6_model_features = f6_model_features.iloc[:-1]
+
+## 예측 가중치 수평 막대 그래프 생성
+fig = plt.figure(figsize=(10, 10), facecolor="white")
+ax = plt.subplot()
+plt.barh(f6_model_features.index, f6_model_features["coef"],
+        color=f6_model_features["positive"].map({True : "blue", False : "red"}))
+ax.grid(ls="-", color="k", lw=0.3)
+
+plt.show() ;
+```
+![f6_coef_bar.png](./images/result/f6_coef_bar.png)
+
+### 3-4. 최종 모델의 예측 가중치의 유의확률 막대 그래프
+
+```python
+## 유의확률 데이터 프레임 생성
+pvalue = pd.DataFrame(f6_result_2.pvalues)
+pvalue = pvalue.iloc[1:]
+pvalue.columns = ["pvalue"]
+pvalue["pvalue"] = np.round(pvalue["pvalue"], 3)
+## 예측 가중치 데이터 프레임과 병합
+f6_model_features2 = pd.concat([f6_model_features, pvalue], axis=1)
+## positive2 컬럼에 유의확률이 0.1보다 작으면 True, 크면 False 저장
+f6_model_features2["positive2"] = f6_model_features2["pvalue"] <= 0.1
+
+## 유의확률 막대 그래프 생성
+fig = plt.figure(figsize=(10, 10), facecolor="white")
+ax = plt.subplot()
+plt.barh(f6_model_features2.index, f6_model_features2["coef"],
+        color=f6_model_features2["positive2"].map({True : "blue", False : "red"}))
+ax.grid(ls="-", color="k", lw=0.3)
+
+plt.show() ;
+```
+![f6_coef_pvalue_bar.png](./images/result/f6_coef_pvalue_bar.png)
+
+## 4. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
+
+```python
+plt.figure(figsize=(11, 6))
+plt.subplot(121)
+sp.stats.probplot(f1_result_2.resid, plot=plt)
+plt.title("f1 model : QQ Plot", fontsize=15, y=1.05)
+plt.grid(ls="-", lw=0.2, color="k")
+
+plt.subplot(122)
+sp.stats.probplot(f6_result_2.resid, plot=plt)
+plt.title("f6 model : QQ Plot", fontsize=15, y=1.05)
+plt.grid(ls="-", lw=0.2, color="k")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f1_f6_qq.png](./images/result/f1_f6_qq.png)
+
+
+## 5. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
+
+### 5-1. 예측가격 실제가격 데이터 프레임 생성
+
+```python
+df_4_X = df_4.iloc[:, :13]
+df_4_y = df_4["MEDV"]
+f1_pred = f1_result_2.predict(dfX)
+f6_pred = f6_result_2.predict(df_4_X)
+```
+
+### 5-2. 최초 모델과 최종 모델의 예측값-실제값 분포도 1
+
+```python
+plt.figure(figsize=(10, 11))
+
+plt.subplot(211)
+sns.regplot(x=f1_pred, y=dfy)
+plt.xlabel("predict")
+plt.ylabel("target")
+plt.title("f1 model : predict and target", fontsize=15, y=1.05)
+plt.grid(ls="-", lw=0.3, color="k")
+
+plt.subplot(212)
+sns.regplot(x=pred, y=df_4_y)
+plt.xlabel("predict")
+plt.ylabel("target")
+plt.title("f6 model : predict and target", fontsize=15, y=1.05)
+plt.grid(ls="-", lw=0.3, color="k")
+
+plt.tight_layout()
+plt.show() ;
+```
+![f1_f6_pred_target_dist.png](./images/result/f1_f6_pred_target_dist.png)
+
+### 5-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
+
+```python
+plt.figure(figsize=(8, 6))
+
+sns.regplot(x=f1_pred, y=dfy, label="f1")
+sns.regplot(x=pred, y=df_4_y, label="f6")
+
+plt.xlabel("predict")
+plt.ylabel("target")
+plt.title("f1 model : predict and target", fontsize=15, y=1.05)
+plt.grid(ls="-", lw=0.3, color="k")
+
+plt.legend()
+plt.tight_layout()
+plt.show() ;
+```
+![f1_f6_pred_target_dist_2.png](./images/result/f1_f6_pred_target_dist_2.png)
 
 
