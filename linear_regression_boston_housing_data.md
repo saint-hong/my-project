@@ -3272,7 +3272,7 @@ plt.grid(ls="-", color="k", lw=0.3)
 plt.ylim(0.73, 0.94)
 plt.show();
 ```
-<p align=center> <img src = "./images/result/model_r2_dist.png" height="85%"/> </p>
+<p align=center> <img src = "./images/result/model_r2_dist.png" width="70%"/> </p>
 
 ## 3. 최초 모델과 최종 모델의 잔차-종속변수 분포 비교
 
@@ -3294,7 +3294,7 @@ ax[1].grid(ls="-", color="k", lw=0.3)
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/resid_target_dist.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/resid_target_dist.png" width="70%"/> </p>
 
 ## 3. 최초 모델과 최종 모델의 예측 가중치 비교
 
@@ -3319,7 +3319,7 @@ ax.grid(ls="-", color="k", lw=0.3)
 
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_coef_bar.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_coef_bar.png" width="70%"/> </p>
 
 ### 3-2. 최초 모델의 예측 가중치의 유의확률 막대 그래프
 
@@ -3340,7 +3340,7 @@ ax.grid(ls="-", color="k", lw=0.3)
 
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_coef_pvalue_bar.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_coef_pvalue_bar.png" width="70%"/> </p>
 
 
 ### 3-3. 최종 모델의 예측 가중치 막대 그래프
@@ -3366,7 +3366,7 @@ ax.grid(ls="-", color="k", lw=0.3)
 
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f6_coef_bar.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f6_coef_bar.png" width="70%"/> </p>
 
 ### 3-4. 최종 모델의 예측 가중치의 유의확률 막대 그래프
 
@@ -3390,7 +3390,7 @@ ax.grid(ls="-", color="k", lw=0.3)
 
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f6_coef_pvalue_bar.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f6_coef_pvalue_bar.png" width="70%"/> </p>
 
 ## 4. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
 
@@ -3445,7 +3445,7 @@ plt.grid(ls="-", lw=0.3, color="k")
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" width="70%"/> </p>
 
 ### 5-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
 
@@ -3464,6 +3464,6 @@ plt.legend()
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_f6_pred_target_dist_2.png" height="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_f6_pred_target_dist_2.png" width="70%"/> </p>
 
 
