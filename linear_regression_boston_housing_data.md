@@ -3287,29 +3287,43 @@ plt.show();
 
 ## 3. 최초 모델과 최종 모델의 잔차-종속변수 분포 비교
 
+### 3-1. 최초 모델의 잔차-종속변수 분포
+
 ```python
 # nrows : 행 갯수, ncols : 열 갯수
-fig, ax = plt.subplots(nrows=2, ncols=1, facecolor="white")
+fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))
 sns.set_style(style='white')
 
-sns.regplot(x=f1_result_2.resid, y="MEDV", data=df, ax=ax[0])
-ax[0].set_yticks([0, 10, 20, 30, 40, 50, 60])
-ax[0].set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
-ax[0].grid(ls="-", color="k", lw=0.3)
-
-sns.regplot(x=f6_result_2.resid, y="MEDV", data=df_4, ax=ax[1])
-ax[1].set_yticks([0, 10, 20, 30, 40, 50, 60])
-ax[1].set_title("final model : resid, traget distirbution", fontsize=20, y=1.05)
-ax[1].grid(ls="-", color="k", lw=0.3)
+sns.regplot(x=f1_result_2.resid, y="MEDV", data=df, ax=ax)
+ax.set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
+ax.grid(ls="-", color="k", lw=0.3)
 
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/resid_target_dist.png" width="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_resid_target_dist.png" width="80%"/> </p>
 
-## 3. 최초 모델과 최종 모델의 예측 가중치 비교
+### 3-2. 최종 모델의 잔차-종속변수 분포
 
-### 3-1. 최초 모델의 예측 가중치 막대 그래프
+```python
+# nrows : 행 갯수, ncols : 열 갯수
+fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))     
+sns.set_style(style='white')
+
+sns.regplot(x=f6_result_2.resid, y="MEDV", data=df_4, ax=ax)
+ax.set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
+ax.grid(ls="-", color="k", lw=0.3)
+ax.set_xticks(range(-6, 6))
+
+plt.tight_layout()
+plt.show() ; 
+```
+<p align=center> <img src = "./images/result/f6_resid_target_dist.png" width="80%"/> </p>
+
+
+## 4. 최초 모델과 최종 모델의 예측 가중치 비교
+
+### 4-1. 최초 모델의 예측 가중치 막대 그래프
 
 ```python
 ## f1 모델의 예측 가중치 데이터 프레임 생성
@@ -3332,7 +3346,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f1_coef_bar.png" width="70%"/> </p>
 
-### 3-2. 최초 모델의 예측 가중치의 유의확률 막대 그래프
+### 4-2. 최초 모델의 예측 가중치의 유의확률 막대 그래프
 
 ```python
 ## 예측 가중치 데이터 프레임에 유의 확률 컬럼 생성
@@ -3354,7 +3368,7 @@ plt.show() ;
 <p align=center> <img src = "./images/result/f1_coef_pvalue_bar.png" width="70%"/> </p>
 
 
-### 3-3. 최종 모델의 예측 가중치 막대 그래프
+### 4-3. 최종 모델의 예측 가중치 막대 그래프
 
 ```python
 ## f6 모델의 예측 가중치 데이터 프레임 생성
@@ -3379,7 +3393,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f6_coef_bar.png" width="70%"/> </p>
 
-### 3-4. 최종 모델의 예측 가중치의 유의확률 막대 그래프
+### 4-4. 최종 모델의 예측 가중치의 유의확률 막대 그래프
 
 ```python
 ## 유의확률 데이터 프레임 생성
@@ -3403,7 +3417,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f6_coef_pvalue_bar.png" width="70%"/> </p>
 
-## 4. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
+## 5. 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ 플롯 비교
 
 ```python
 plt.figure(figsize=(11, 6))
@@ -3423,9 +3437,9 @@ plt.show() ;
 ![f1_f6_qq.png](./images/result/f1_f6_qq.png)
 
 
-## 5. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
+## 6. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
 
-### 5-1. 예측가격 실제가격 데이터 프레임 생성
+### 6-1. 예측가격 실제가격 데이터 프레임 생성
 
 ```python
 df_4_X = df_4.iloc[:, :13]
@@ -3434,7 +3448,7 @@ f1_pred = f1_result_2.predict(dfX)
 f6_pred = f6_result_2.predict(df_4_X)
 ```
 
-### 5-2. 최초 모델과 최종 모델의 예측값-실제값 분포도 1
+### 6-2. 최초 모델과 최종 모델의 예측값-실제값 분포도 1
 
 ```python
 plt.figure(figsize=(10, 11))
@@ -3458,7 +3472,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" width="70%"/> </p>
 
-### 5-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
+### 6-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
 
 ```python
 plt.figure(figsize=(8, 6))
