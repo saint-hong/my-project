@@ -357,7 +357,7 @@ sns.pairplot(df[sep_cols[0]])
 
 plt.show() ;
 ```
-![p11.png](./images/p11.png)
+<p align=center> <img src="./images/p11.png" width="80%" /> </p>
 
 #### CHAS, NOX, RM과 MEDV
 - **CHAS**
@@ -373,7 +373,7 @@ sns.pairplot(df[sep_cols[1]])
 
 plt.show() ; 
 ```
-![p12.png](./images/p12.png)
+<p align=center> <img src="./images/p12.png" width="80%" /> </p>
 
 #### AGE, DIS, RAD와 MEDV
 - **AGE**
@@ -389,7 +389,7 @@ sns.pairplot(df[sep_cols[2]])
 
 plt.show() ; 
 ```
-![p13.png](./images/p13.png)
+<p align=center> <img src="./images/p13.png" width="80%" /> </p>
 
 #### TAX, PTRATIO, B, LSTAT와 MEDV
 - **TAX**
@@ -408,7 +408,7 @@ sns.pairplot(df[sep_cols[3]])
 
 plt.show() ;
 ```
-![p14.png](./images/p14.png)
+<p align=center> <img src="./images/p14.png" width="80%" /> </p>
 
 ### 5-8. 변수의 누적 분포
 - 독립변수의 비선형 변형에 참고로 사용할 수 있다.
@@ -439,8 +439,7 @@ for i in range(14) :
 plt.tight_layout()
 plt.show()
 ```
-![p15.png](./images/p15.png)
-
+<p align=center> <img src="./images/p15.png" width="80%" /> </p>
 
 # 모델링
 
@@ -1534,7 +1533,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn")
 plt.show() ;
 ```
-![f3_trans_corr_matrix.png](./images/model_5/f3_trans_corr_matrix.png)
+<p align=center> <img src="./images/model_5/f3_trans_corr_matrix.png" width="80%" /> </p>
 
 ## 6. 모델링 6 : m_6
 
@@ -2010,9 +2009,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-
-![f4_trans_corr_matrix.png](./images/model_6/f4_trans_corr_matrix.png)
-
+<p align=center> <img src = "./images/model_6/f4_trans_corr_matrix.png" height="80%"/> </p>
 
 ## <모델링 6의 분석>
 1) **CIRM, DIS, RM 독립변수를 각각 비선형 변형을 적용하여 모델의 성능이 개선된 것을 볼 수 있었다.** 독립변수의 비선형 변형을 적용할 때에 독립변수의 분포 형태뿐만 아니라 잔차와 독립변수의 분포 형태를 파악해야 한다는 것을 알 수 있었다. 좋은 모델일 수록 잔차와 독립변수 사이에는 어떠한 선형관계나 비선형관계가 있으면 안되기때문이다. 왜냐하면 선형회귀모형의 확률적 조건에서 오차는 조건부독립의 성질 띈다. 즉 독립변수에 영향을 받지 않는다는 조건인데, 잔차는 오차의 변형 형태이므로 같은 성질을 갖는다.
@@ -2181,7 +2178,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-![f42_corr_matrix.png](./images/model_7/f42_corr_matrix.png)
+<p align=center> <img src = "./images/model_7/f42_corr_matrix.png" height="80%"/> </p>
 
 ## <모델링 7의 분석>
 1) f4 모델의 잔차 분포를 분석한 결과 아웃라이어가 발생한다는 것을 확인 한 후 폭스추천값을 사용하여 아웃라이어를 제거 하였다.
@@ -2690,7 +2687,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-![f53_non_ol_corr_matrix.png](./images/model_9/f53_non_ol_corr_matrix.png)
+<p align=center> <img src = "./images/model_9/f53_non_ol_corr_matrix.png" height="80%"/> </p>
 
 ## <모델링 9의 분석>
 1) formula_5에서 모든 독립변수의 비선형 변형을 적용하였고, 3차 아웃라이어를 측정하여 제거하였다.
@@ -2835,7 +2832,7 @@ plt.figure(figsize=(15, 15))
 sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="YlGn", cbar=False)
 plt.show() ;
 ```
-![f66_log_lstat_corr_matrix.png](./images/model_10/f66_log_lstat_corr_matrix.png)
+<p align=center> <img src = "./images/model_10/f66_log_lstat_corr_matrix.png" height="80%"/> </p>
 
 ## <모델링 10의 분석>
 1) **LSTAT 변수의 종속변수와의 분포 형태에 더 적합하도록 로그 변형을 적용하였고, 성능이 좀 더 개선되었다.** 독립변수와 종속변수의 분포는 선형관계이어야 좋은 모델이라고 할 수 있으나, 비선형 관계인 경우는 독립변수의 비선형 변형을 통해서 비선형 관계를 줄여줄 수 있다. 이러한 방식으로 모든 독립변수의 비선형 변형을 적용하였다. 다만 어떤 비선형 변형이 더 적합한지는 모델링을 통하여 개선해 나가야한다는 것을 알 수 있었다.
@@ -3491,7 +3488,7 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" width="70%"/> </p>
 
-### 7-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 2
+### 7-3. 최초 모델과 최종 모델의 예측값-실제값 분포도  2
 
 ```python
 plt.figure(figsize=(8, 6))
