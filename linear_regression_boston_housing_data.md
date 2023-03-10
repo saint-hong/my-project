@@ -3450,6 +3450,7 @@ m10_coef_pv_df["index2"] = [
     "RAD", "RAD", "RAD", "RAD", "RAD", "RAD",
     "CRIM", "CRIM", "INDUS", "AGE", "AGE", "DIS",
     "TAX", "PTRATIO", "PTRATIO", "B", "LSTAT"]
+## 독립변수별로 예측 가중치를 합산
 m10_coef_fmt_df = m10_coef_pv_df.groupby("index2")[["coef"]].sum()
 ## 예측 가중치에 1000을 곱하여 달러의 변화량으로 환산
 m10_coef_fmt_df["fmt"] = round(m10_coef_fmt_df["coef"] * 1000, 2)
