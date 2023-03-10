@@ -1,6 +1,6 @@
 # 선형회귀 분석을 사용한 Boston Housing Data 집값 예측 프로젝트
 
-<p align=center> <img src="./images/boston_city.jpg" width="75%">
+<p align=center> <img src="./images/boston_city.jpg" width="80%">
 
 ## <레포지토리 구성>
 - `프로젝트 파일` 
@@ -38,7 +38,7 @@
 3) 모델링
     - formula 설정 및 적용
     - OLS model 생성, 모수추정
-    - 총 14개의 모델 생성 : m_1, m_2, m_3, m_4, m_5, m_6, m_7, m_8, m_9, m_10, m_11, m_pca30, m_pca25, m_pca20
+    - 총 14개의 모델 생성 : m_1, m_2, m_3, m_4, m_5, m_6, m_7, m_8, m_9, m_10, m_11, m_pca1, m_pca2, m_pca3
 4) 모델 검증
     - OLS 레포트의 성능지표 분석
     - 교차 검증
@@ -74,7 +74,7 @@
     - 성능이 비슷한 m_9과 m_10의 차이는 독립변수 LSTAT의 비선형 변형의 차이이다. m_9는 2차형 변형을 적용하였고, m_10은 로그 변형을 적용하였다.
 - m_11 변수선택법을 사용하여 독립변수 ZN과 AGE를 제거한 모델이고, m_pca1, m_pca_2, m_pca3은 PCA를 사용하여 데이터의 차원축소를 한 모델이다. 과최적화가 발생하지 않아 데이터의 크기가 줄면서 성능이 줄어든다. 반면 PCA 모델에서 F-검정값이 낮아지면서 데이터의 적합도는 오히려 개선되는 현상을 보인다.
 
-<p align=center> <img src="./images/result/model_r2_dist.png", width="75%" /> </p>
+<p align=center> <img src="./images/result/model_r2_dist_new.png", width="75%" /> </p>
 
 ### 2-3. (프로젝트 결과 1-4-3) 최종 모델의 예측 가중치 막대 그래프
 - 양의 계수 : RM(8,7), PTRATIO(2차), RAD(24,7,8,3,4,5,6,2), CRIM(2차), B, CHAS(1), AGE, INDUS(2차), DIS(2차), NOX
@@ -88,11 +88,11 @@
 <p align=center> <img src="./images/result/f6_coef_bar.png", width="75%" /> </p>
     
 ### 2-4. (프로젝트 결과 1-6) 최초 모델과 최종 모델의 잔차의 정규성 검정 : QQ플롯 비교
-- **m_6이 m_1보다 잔차의 분포가 정규분포에 더 가까우므로 모델의 적합도가 더 높다고 볼 수 있다.**
+- **m_10이 m_1보다 잔차의 분포가 정규분포에 더 가까우므로 모델의 적합도가 더 높다고 볼 수 있다.**
 - m_1은 2차형 곡선 처럼 휘어져 있고 중심분포에서 떨어진 데이터들의 거리가 멀다.
-- m_6의 분포는 직선에 가깝고 중심분포에서 떨어진 데이터들의 거리가 가깝다.    
+- m_10의 분포는 직선에 가깝고 중심분포에서 떨어진 데이터들의 거리가 가깝다.    
 
-<p align=center> <img src="./images/result/f1_f6_qq.png" /> </p>
+<p align=center> <img src="./images/result/f1_f6_qq_new.png" /> </p>
 
 ### 2-5. (프로젝트 결과 2) 가설 2 "집값을 증가, 감소 시키는 가장 큰 요인 3가지"의 검증 
 - 집값을 증가시키는 요인
