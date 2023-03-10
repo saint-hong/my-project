@@ -3249,7 +3249,7 @@ plt.axhline(f6_pca.loc["r2"].values.max(), linestyle="--", color="b", lw=0.8)
 plt.axvline(f6_pca.loc["r2"].values.argmax(), linestyle="--", color="b", lw=0.8)
 
 plt.xticks(range(14),
-           [["m_{}".format(i) if i <=11 else "m_pca{}".format(int(i%10))][0] \
+           [["m_{}".format(i) if i <=11 else "m_pca{}".format(int(i%10)-1)][0] \
             for i in range(1, 15)], rotation=-30)
 plt.title("Models Compare : R2 Scores", fontsize=15, y=1.05)
 
@@ -3257,7 +3257,7 @@ plt.grid(ls="-", color="k", lw=0.3)
 plt.ylim(0.73, 0.94)
 plt.show();
 ```
-<p align=center> <img src = "./images/result/model_r2_dist.png" width="70%"/> </p>
+<p align=center> <img src = "./images/result/model_r2_dist_new.png" width="70%"/> </p>
 
 ## 3. 최초 모델과 최종 모델의 잔차-종속변수 분포 비교
 - 최초 모델 m_1의 분포
@@ -3274,35 +3274,37 @@ plt.show();
 ### 3-1. 최초 모델의 잔차-종속변수 분포
 
 ```python
-# nrows : 행 갯수, ncols : 열 갯수
-fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))
+fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))     
+ax = plt.subplot()
 sns.set_style(style='white')
 
 sns.regplot(x=f1_result_2.resid, y="MEDV", data=df, ax=ax)
-ax.set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
+ax.set_title("first model m_1 : resid, traget distirbution", fontsize=20, y=1.05)
 ax.grid(ls="-", color="k", lw=0.3)
-
-plt.tight_layout()
-plt.show() ;
-```
-<p align=center> <img src = "./images/result/f1_resid_target_dist.png" width="80%"/> </p>
-
-### 3-2. 최종 모델의 잔차-종속변수 분포
-
-```python
-# nrows : 행 갯수, ncols : 열 갯수
-fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))     
-sns.set_style(style='white')
-
-sns.regplot(x=f6_result_2.resid, y="MEDV", data=df_4, ax=ax)
-ax.set_title("first model : resid, traget distirbution", fontsize=20, y=1.05)
-ax.grid(ls="-", color="k", lw=0.3)
-ax.set_xticks(range(-6, 6))
+ax.set_xlabel("resid")
 
 plt.tight_layout()
 plt.show() ; 
 ```
-<p align=center> <img src = "./images/result/f6_resid_target_dist.png" width="80%"/> </p>
+<p align=center> <img src = "./images/result/f1_resid_target_dist_new.png" width="80%"/> </p>
+
+### 3-2. 최종 모델의 잔차-종속변수 분포
+
+```python
+fig, ax = plt.subplots(facecolor="white", figsize=(8, 6))     
+ax = plt.subplot()
+sns.set_style(style='white')
+
+sns.regplot(x=f6_result_2.resid, y="MEDV", data=df_4, ax=ax)
+ax.set_title("final model m_10 : resid, traget distirbution", fontsize=20, y=1.05)
+ax.grid(ls="-", color="k", lw=0.3)
+ax.set_xticks(range(-6, 6))
+ax.set_xlabel("resid")
+
+plt.tight_layout()
+plt.show() ; 
+```
+<p align=center> <img src = "./images/result/f6_resid_target_dist_new.png" width="80%"/> </p>
 
 
 ## 4. 최초 모델과 최종 모델의 예측 가중치 비교
@@ -3418,6 +3420,51 @@ plt.show() ;
 ```
 <p align=center> <img src = "./images/result/f6_coef_pvalue_bar.png" width="70%"/> </p>
 
+### 4-5. 최초 모델과 최종 모델의 예측 가중치를 집값의 변화량으로 변환한 데이터 프레임
+- **최종 모델 m_10은 p-value의 유의수준을 0.1을 기준으로 하였다.** 
+    - 0.1보다 큰 독립변수는 예측 가중치가 0이라고 볼 수 있으므로 제거한 후 비교
+
+```python
+## 최초 모델의 예측 가중치를 집값으로 환산한 데이터 프레임
+m1_coef = pd.DataFrame(f1_result_2.params, columns=["coef"])
+m1_coef = m1_coef.reset_index()
+m1_coef["index2"] = [
+    "intercept", "CHAS", "CRIM", "ZN", "INDUS", "NOX", "RM", "AGE", "DIS",
+    "RAD", "TAX", "PTRATIO", "B", "LSTAT"]
+m1_coef_fmt_df = m1_coef.iloc[:, 1:]
+m1_coef_fmt_df["fmt"] = round(m1_coef_fmt_df["coef"] * 1000, 2)
+
+## 최종 모델의 예측 가중치를 집값으로 환산한 데이터 프레임
+m10_coef = pd.DataFrame(f6_result_2.params, columns=["coef"])
+m10_coef = m10_coef.reset_index()
+m10_pvalue = pd.DataFrame(f6_result_2.pvalues, columns=["pv"])
+m10_pvalue["pv"] = m10_pvalue["pv"].round(3)
+m10_pvalue = m10_pvalue.reset_index()
+m10_coef_pv_df = pd.merge(m10_coef, m10_pvalue, left_on="index", right_on="index", how="outer")
+## p-value가 0.1 이하인 독립변수만 선택
+m10_coef_pv_df = m10_coef_pv_df[m10_coef_pv_df["pv"] <= 0.1]
+## 비선형 변형한 독립변수들을 같은 변수들로 묶어주는 컬럼
+m10_coef_pv_df["index2"] = [0] * 21
+m10_coef_pv_df["index2"] = [
+    "intercept", "CHAS", "RM", "RM", 
+    "RAD", "RAD", "RAD", "RAD", "RAD", "RAD",
+    "CRIM", "CRIM", "INDUS", "AGE", "AGE", "DIS",
+    "TAX", "PTRATIO", "PTRATIO", "B", "LSTAT"]
+m10_coef_fmt_df = m10_coef_pv_df.groupby("index2")[["coef"]].sum()
+## 예측 가중치에 1000을 곱하여 달러의 변화량으로 환산
+m10_coef_fmt_df["fmt"] = round(m10_coef_fmt_df["coef"] * 1000, 2)
+m10_coef_fmt_df = m10_coef_fmt_df.reset_index()
+
+## 최초 모델과 최종 모델의 집값 변화량 데이터 프레임 병합
+m1_m10_coef_fmt = pd.merge(m10_coef_fmt_df, m1_coef_fmt_df,
+                          left_on="index2", right_on="index2", how="outer")
+m1_m10_coef_fmt = m1_m10_coef_fmt[m1_m10_coef_fmt["index2"] != "intercept"].sort_values("fmt_x", ascending=False)
+m1_m10_coef_fmt = m1_m10_coef_fmt[["index2", "fmt_x", "fmt_y"]]
+m1_m10_coef_fmt.columns = ["features", "m_10", "m_1"]
+m1_m10_coef_fmt.reset_index(drop=True)
+```
+<p align=center> <img src = "./images/result/m1_m10_coef_fmt_df.jpg" /> </p>
+
 ## 5. 최종모델의 부분회귀 플롯을 사용한 독립변수의 예측 가중치의 상관관계
 - 독립변수에서 다른 독립변수에 대한 의존성을 제거한 순수한 독립변수의 종속변수와의 상관관계 그래프
 
@@ -3473,20 +3520,20 @@ plt.subplot(211)
 sns.regplot(x=f1_pred, y=dfy)
 plt.xlabel("predict")
 plt.ylabel("target")
-plt.title("f1 model : predict and target", fontsize=15, y=1.05)
+plt.title("first model m_1 : predict and target", fontsize=15, y=1.05)
 plt.grid(ls="-", lw=0.3, color="k")
 
 plt.subplot(212)
-sns.regplot(x=pred, y=df_4_y)
+sns.regplot(x=f6_pred, y=df_4_y)
 plt.xlabel("predict")
 plt.ylabel("target")
-plt.title("f6 model : predict and target", fontsize=15, y=1.05)
+plt.title("final model m_10 : predict and target", fontsize=15, y=1.05)
 plt.grid(ls="-", lw=0.3, color="k")
 
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_f6_pred_target_dist.png" width="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_f6_pred_target_dist_new.png" width="70%"/> </p>
 
 ### 7-3. 최초 모델과 최종 모델의 예측값-실제값 분포도 병합 2 
 
@@ -3494,18 +3541,18 @@ plt.show() ;
 plt.figure(figsize=(8, 6))
 
 sns.regplot(x=f1_pred, y=dfy, label="f1")
-sns.regplot(x=pred, y=df_4_y, label="f6")
+sns.regplot(x=f6_pred, y=df_4_y, label="f6")
 
 plt.xlabel("predict")
 plt.ylabel("target")
-plt.title("f1 model : predict and target", fontsize=15, y=1.05)
+plt.title("first, final model : predict and target distribution compare", fontsize=15, y=1.05)
 plt.grid(ls="-", lw=0.3, color="k")
 
 plt.legend()
 plt.tight_layout()
 plt.show() ;
 ```
-<p align=center> <img src = "./images/result/f1_f6_pred_target_dist_2.png" width="70%"/> </p>
+<p align=center> <img src = "./images/result/f1_f6_pred_target_dist_2_new.png" width="70%"/> </p>
 
 # <프로젝트 결과 2 - 분석 목적에 대한 결론>
 
