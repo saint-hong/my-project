@@ -83,7 +83,7 @@
 - ZN은 최초모델과 최종모델에서 계수의 부호가 양에서 음으로 바뀌었다.
 - RM은 클래스 6이 양에서 음의 계수로 바뀌었다.
 - NOX는 기본형이 음에서 양의 계수로 바뀌었다.
-- PTRATIO는 음과 양의 계수값이 강하다.    
+- PTRATIO, CRIM, INDUS, NOX, AGE, DIS는 비선형 변형 변수들이 각각 음과 양의 계수값으로 나타난다. 특히 PTRATIO 변수는 음과 양의 계수값이 매우 크다.
     
 <p align=center> <img src="./images/result/f6_coef_bar.png", width="75%" /> </p>
     
