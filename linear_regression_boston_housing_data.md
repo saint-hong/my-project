@@ -3485,18 +3485,18 @@ plt.show() ;
 plt.figure(figsize=(11, 6))
 plt.subplot(121)
 sp.stats.probplot(f1_result_2.resid, plot=plt)
-plt.title("f1 model : QQ Plot", fontsize=15, y=1.05)
+plt.title("first model m_1 : QQ Plot", fontsize=15, y=1.05)
 plt.grid(ls="-", lw=0.2, color="k")
 
 plt.subplot(122)
 sp.stats.probplot(f6_result_2.resid, plot=plt)
-plt.title("f6 model : QQ Plot", fontsize=15, y=1.05)
+plt.title("final model m_10 : QQ Plot", fontsize=15, y=1.05)
 plt.grid(ls="-", lw=0.2, color="k")
 
 plt.tight_layout()
 plt.show() ;
 ```
-![f1_f6_qq.png](./images/result/f1_f6_qq.png)
+<p align=center> <img src="./images/result/f1_f6_qq_new.png" /> </p>
 
 ## 7. 최초 모델과 최종 모델의 예측가격-실제가격 분포 비교
 - 좋은 모델의 예측값과 종속값의 분포는 기울기가 1인 직선에 가깝다. 그러나 현실의 데이터에서는 타원형으로 나타난다.
