@@ -1,0 +1,44 @@
+# 기본 패키지 설정
+import seaborn as sns
+import numpy as np
+import scipy as sp
+import pandas as pd
+import statsmodels.api as sm
+import sklearn as sk
+
+# 선형회귀 분석 패키지
+
+## X 데이터를 dmatrix 변환 해주는 패키지
+from patsy import dmatrix
+
+## OLS 모델 생성 매서드
+sm.OLS()
+sm.OLS.from_formula()
+
+## 훈련, 검증 데이터 분리 패키지
+from sklearn.model_selection import train_test_split
+
+## 교차검증 용 패키지
+from sklearn.model_selection import KFold
+
+## VIF 측정 패키지
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+## PCA 패지키
+from sklearn.decomposition import PCA
+
+## 잔차의 정규성 검정을 위한 자크베라 테스트 매서드
+sm.stats.jarque_bera()
+
+## ANOVA 측정 패키지 
+sm.stats.anonva_lm()
+
+
+
+
+
+
+
+
+
+
