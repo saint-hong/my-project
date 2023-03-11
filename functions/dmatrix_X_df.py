@@ -8,6 +8,9 @@ OLS 모델 생성시 from_formula 매서드 없이 사용가능 :
     sm.OLS(dfX, dfy)
 
 VIF(변수선택법) 분석의 입력데이터로 사용할 수 있음
+
+사용한 패키지 : 
+    dmatrix 변환 : from patsy import dmatrix
 """
 
 def dmatrix_X_df(formula, df, outlier_idx=None) :
