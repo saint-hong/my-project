@@ -31,3 +31,11 @@ def dmatrix_X_df(formula, df, outlier_idx=None) :
     return dfX_transform
 
 
+
+
+
+
+
+
+
+

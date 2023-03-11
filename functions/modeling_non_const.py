@@ -28,3 +28,6 @@ def modeling_non_const(formula, data) :
 
 
 
+
+
+
