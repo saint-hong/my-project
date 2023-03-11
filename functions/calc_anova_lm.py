@@ -7,7 +7,7 @@ mdeling_non_const 함수로 생성한 모델을 사용해야함 :
     상수항 미포함, X, y 병합 데이터 사용한 모델
 
 사용한 패키지 : 
-    sm.stats.anova_lm()
+    분산분석 : sm.stats.anova_lm()
 """
 
 def calc_anova_lm(result) : 
