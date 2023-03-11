@@ -3,12 +3,14 @@
 <p align=center> <img src="./images/boston_city.jpg" width="80%">
 
 ## <레포지토리 구성>
-- `프로젝트 파일` 
-    - 01_linear_regression_analysis_boston_housing.md
-- `프로젝트에서 사용한 함수 정리 파일`
-    - 02_used_functions.py
+- `프로젝트 파일`
+    - linear_regression_analysis_boston_housing.md
+- `프로젝트에서 사용한 함수 정리 디렉토리`
+    - functions
+- `분석에 사용한 패키지 정리 디렉토리`
+    - docs
 - `이미지 파일 디렉토리`
-    - images
+    - images    
 
 ## 1. 분석 개요
 
