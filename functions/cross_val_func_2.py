@@ -17,6 +17,9 @@ calc_r2 함수 :
     train_test_split()의 random_state 값을 바꿔서 데이터 분할 비율을 다르게 함
     반복문의 반복 횟수만큼 교차검증하는 것과 같음
     train, test 교차검증 값을 데이터 프레임으로 반환
+    
+사용한 패키지 : 
+    훈련, 검증 데이터 분리 : from sklearn.model_selection import train_test_split
 """
 
 def df_split_train_model(data, formula, test_size, seed) :
