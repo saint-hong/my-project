@@ -5,6 +5,9 @@
  모델과 결과 객체를 반환해주는 함수
 
  VIF(변수선택법) 분석을 할때 사용할 수 있음
+ 
+ 사용한 패키지 : 
+     OLS 모델 생성 : sm.OLS()
 """
 
 def modeling_dmatrix(dfy, dfX) :

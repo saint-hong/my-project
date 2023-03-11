@@ -13,6 +13,9 @@
 
 변형 formula를 단독으로 적용한 모델의 성능과 누적 적용한 모델의 성능을 각각 반환 : 
     비선형 변형을 단독으로 썼을 때와 누적해서 썼을때의 성능을 비교하기 위함
+    
+사용한 패키지 : 
+    OLS 모델 생성 : sm.OLS.from_formula()
 """
 
 def feature_trans(data, col, p) :

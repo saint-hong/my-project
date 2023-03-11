@@ -7,7 +7,6 @@
 
 사용한 패키지 : 
     from sklearn.decomposition import PCA
-    import pandas as pd
 """
 
 def pca_modeling(n, df_X, formula) :

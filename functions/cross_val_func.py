@@ -12,7 +12,11 @@ KFold() 교차검증 용 패키지 사용 :
 
 formula를 입력받아 sm.OLS.from_formula()에 적용
 
-검증 모델의 성능값은 모델을 사용하지 않고 직접 계산해주어야 함 
+검증 모델의 성능값은 모델을 사용하지 않고 직접 계산해주어야 함
+
+사용한 패키지 :
+    교차검증 : from sklearn.model_selection import KFold
+    OLS 모델링 : sm.OLS.from_formula()
 """
 
 def cross_val_func(cv, data, formula) : 
