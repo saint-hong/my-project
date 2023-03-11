@@ -5,6 +5,9 @@
 
 모델의 이름을 저장한 리스트로 모델별 자크베라 테스트 값을 측정 :
     eval() 함수를 사용하여 str을 객체로 변환
+    
+사용한 패키지 : 
+    자크베라 검정 : sm.stats.jarque_bera()
 """
 
 def resid_jbtest_df(models, q=None) : 
