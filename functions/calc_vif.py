@@ -7,6 +7,8 @@ dmatrix_X_df로 변환한 X 데이터를 사용하여 VIF 값을 측정 :
 
 데이터 프레임 반환
 
+사용한 패키지 : 
+     from statsmodels.stats.outliers_influence import variance_inflation_factor
 """
 
 
