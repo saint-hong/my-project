@@ -1,6 +1,8 @@
 """
 <모델의 교차검증 성능값을 반환하는 함수>
 
+train_test_split() 패키지로 교차검증
+
 df_split_train_model 함수 : 
     train_test_split() 패키지를 사용하여 훈련, 검증 데이터로 분리
     test_size와 random_state 값 설정 가능
