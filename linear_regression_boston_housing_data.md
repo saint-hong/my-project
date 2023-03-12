@@ -1,4 +1,5 @@
-# 프로젝트 : 선형회귀 분석을 사용한 Boston Housing Data 집값 예측
+# 선형회귀 분석을 사용한 Boston Housing Data 집값 예측
+    - "집값 상승의 가장 큰 요인은 무엇일까?"
 
 <p align=center> <img src = "./images/boston_city.jpg" height="70%"/> </p>
 
