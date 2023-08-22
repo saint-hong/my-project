@@ -11,8 +11,6 @@ dmatrix_X_df로 변환한 X 데이터를 사용하여 VIF 값을 측정 :
      from statsmodels.stats.outliers_influence import variance_inflation_factor
 """
 
-
-
 def calc_vif(data_X) : 
     
     """    
