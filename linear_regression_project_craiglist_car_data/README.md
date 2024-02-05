@@ -44,3 +44,6 @@
 
 ## 한계 및 개선점
   - 자동차 보증수리 여부에 대한 명확한 데이터의 부재로, Model 5의 아이디어를 좀더 발전 시키지 못함
+
+## 자세한 내용은 프로젝트 파일을 참고 바랍니다.
+[linear_regression_car_data](https://github.com/saint-hong/my-project/blob/main/linear_regression_project_craiglist_car_data/usedcar_linear_regression/used_car_regression_final.ipynb)
