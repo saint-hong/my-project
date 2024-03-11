@@ -124,4 +124,5 @@
 - **또한 어떤 현상에 대하여 경험적 지식과 현상을 수치화한 데이터의 분석결과가 일치하지 않을 수 있지만 두 지식을 적절하게 결합하면 사업분야에서 의미있는 성과를 도출할 수 있을 것이라는 생각을 할 수 있었다.** 일반적으로 과학적 분석의 결과를 좀 더 신뢰하고 경험적 지식을 배제하게 되지만 불일치와 관련한 다른 요소의 관점에서 본다면 두 지식 모두 유의미할 수 있기 때문이다. 예를들면 위의 가설 검증 중에서 집값을 감소시키는 요인으로 경험적 지식에 의해 INDUS(산업부지의 비율)를 선택했지만 데이터 분석결과는 INDUS가 집값을 증가시키는 요인으로 나온 경우를 들 수 있다. 경험적 지식으로는 집 주변에 산업부지의 비율이 높다면 산업시설이 늘어날 수 있으므로 집값이 떨어질 것으로 생각했지만, 데이터의 시점에서 도시의 산업이 발달하면서 노동자가 많이 유입되는 상황이라면 산업시설 근처에 위치한 집일 수록 집값은 높아질 수 있고 두 지식이 일치하지 않게 된다. **이러한 경우 두 지식의 불일치와 관련된 "직업별 인구수"라는 관점에서 본다면 INDUS로 집값이 감소하는 지역과 INDUS로 집값이 증가하는 지역을 구분하고 사업의 서비스 역량을 차별화하거나 한 곳에 집중시킴으로써 서비스 효과를 극대화 시킬 수 있을 것이다.**
 
 ### 자세한 내용은 프로젝트 파일을 참고 해주시기 바랍니다.
-[linear_regression_boston_housing_data](https://github.com/saint-hong/my-project/blob/main/linear_regression_boston_housing_data.md)
+[linear_regression_boston_housing_data](https://github.com/saint-hong/my-project/blob/main/linear_regression_project_boston_housing/linear_regression_boston_housing_data.md)
+
