@@ -74,45 +74,11 @@
 <img src="./images/statistic_model_test_total.png">
 
 ## Review
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- 케글의 compettion의 기능과 룰을 이해할 수 있었다.
+- feature engineering과 hyper parmeter tunning에 많은 시간을 할애 했으나 좋은 score를 얻지는 못했다. 이 과정에서 모형의 성능 향상을 위해 너무 복잡한 feature engineering과 hyper parameter tunning에 의존하면 안된다는 것을 알 수 있었다.
+- hyper parameter tunning의 수 많은 조합을 모두 테스트하기에는 현실적 제약이 있으므로 이것을 단축하기 위해서 모수추정(fitting) 방법이 유사한 모델들 중 대표적인 모델을 우선 선택하여 성능을 측정해가면서 다른 모델들로 확장하여 사용하는 것이 효과적인 방법이 될 수 있을 것 같다.  
+- 또한 훈련 데이터의 가장 기본 형태를 우선적으로 모델링 실험하여 성능이 어느정도 인지 비교해가면서 feature engineering 작업에 더 많은 시간을 할애하는 것이 좋은 것 같다.
+- Discussion 메뉴를 적극적으로 사용하여 모델의 성능 향상에 관한 다른 참가자들의 경험, 의견, 부분적 풀이 방법들을 참고하고 함께 논의하는 과정도 필요하다는 것을 알 수 있었다.
 
 
 
