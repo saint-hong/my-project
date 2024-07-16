@@ -12,7 +12,7 @@
 - **kaggle_compettion_titanic** : 하이퍼 파라미터 튜닝과 통계적 모델 비교 방법을 사용한 타이타닉의 승객 데이터 생존여부 예측 분류문제
    - url : https://github.com/saint-hong/my-project/tree/main/kaggle_compettion_titanic
    - kaggle url : https://www.kaggle.com/competitions/titanic
-- **kaggle_compettion_student** ; Feature Enginnering과 Hyper parameter tunning 및 AutoML을 사용한 학생의 성적, 인종, 가족환경 등의 데이터 졸업여부 예측 분류문제
+- **kaggle_compettion_student** ; Feature Enginnering과 Hyper parameter tunning 및 AutoML을 사용한 학생의 생활 기록부 데이터 졸업여부 예측 분류문제
    - url : https://github.com/saint-hong/my-project/tree/main/kaggle_compettion_student
    - kaggle url : https://www.kaggle.com/competitions/playground-series-s4e6
 
