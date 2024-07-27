@@ -59,6 +59,8 @@
       - numeric, categorical features binning + log transform
       - 나이브 베이즈 결합 모형
 
+<img src="./images/pipeline.png">
+
 ### file 2 : Hyper parameter tunning test
 - **1. Data Setting**
 - **2. numeric, categorical features setting**
